@@ -1,0 +1,20 @@
+{
+  "name": "שיר לי · Shir Li",
+  "short_name": "שיר לי",
+  "description": "האולפן שלך: שרים או מזמזמים, וה-AI בונה את השיר. Your studio: sing or hum, and AI builds the song.",
+  "id": "./",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdf2ff",
+  "theme_color": "#8b5cf6",
+  "lang": "he",
+  "dir": "rtl",
+  "categories": ["music", "entertainment"],
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
