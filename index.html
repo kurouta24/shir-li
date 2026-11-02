@@ -182,6 +182,41 @@ div.gh{border:0;cursor:default}
 .cin button:disabled{opacity:.5}
 .tin{width:6.5em;text-align:center}
 .nvbtn{margin-top:12px}
+/* פס השיר, שלבים, מסך פתיחה ונגן צף */
+.pbar{background:var(--card);border-radius:20px;padding:8px 10px;margin-bottom:6px;border:1px solid #fff;box-shadow:0 6px 18px #8b5cf61a}
+.ptop{display:flex;gap:6px;align-items:center}
+.ptitle{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:19px;font-weight:800;color:var(--ink);padding:6px 4px;border-bottom:2px dashed #e9d8ff;border-radius:0;outline:none}
+.ptitle:focus{border-bottom-color:var(--purple)}
+.ptop .sbtn{padding:9px 10px;white-space:nowrap}
+.pbar .sync{margin:4px 4px 0}
+.pbar .sync:empty{display:none}
+.steps{position:sticky;top:env(safe-area-inset-top,0px);z-index:12;display:flex;gap:5px;scrollbar-width:none;padding:8px 0;margin-bottom:8px;background:#fdf2ffe6;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.steps button{flex:1 1 0;min-width:0;border:2px solid #e9d8ff;background:#fff;border-radius:999px;padding:7px 2px;font:inherit;font-size:13px;overflow:hidden;text-overflow:ellipsis;font-weight:700;color:var(--ink);cursor:pointer;white-space:nowrap}
+.steps button.on{background:var(--grad);color:#fff;border-color:transparent}
+.steps button:disabled{opacity:.4;cursor:default}
+.card{scroll-margin-top:64px}
+.hello{margin:2px 2px 14px;font-size:21px;text-align:center}
+.big-btn.wide{width:100%;flex-direction:row;justify-content:flex-start;gap:12px;margin-top:12px;text-align:start;padding:14px 16px}
+.big-btn.wide span{display:flex;flex-direction:column;gap:2px}
+.big-btn small{font-weight:500;font-size:13px;color:var(--muted)}
+#openSaved{margin-top:12px}
+.sub{border-top:2px dashed #f3e8ff;padding-top:12px;margin-top:14px}
+.step+.sub{border-top:0;padding-top:0;margin-top:0}
+.subt{margin:0 2px 6px;font-weight:800;font-size:15px}
+.opt{font-weight:500;font-size:12px;color:var(--muted)}
+.how{margin-top:8px}.how summary{font-size:14px}
+.tools3 .sbtn{flex:1 1 auto}
+.mini{position:fixed;left:0;right:0;bottom:0;z-index:14;background:#2a1052f2;color:#fff;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 -6px 20px #2a105233;padding-block:10px calc(10px + env(safe-area-inset-bottom,0px));padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
+.minin{max-width:560px;margin:0 auto;display:flex;align-items:center;gap:8px}
+.mbtn{width:44px;height:44px;border-radius:50%;border:0;background:#ffffff22;color:#fff;font-size:18px;cursor:pointer;flex:none}
+.mbtn.main{background:var(--grad);width:50px;height:50px;font-size:20px}
+.mbtn.re{background:var(--pink)}
+.mmid{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px;cursor:pointer;padding:6px 0}
+.mbar{height:8px;border-radius:8px;background:#ffffff33;position:relative;overflow:hidden}
+#miniFill{position:absolute;top:0;bottom:0;inset-inline-start:0;width:0;background:var(--grad)}
+#miniClock{font-size:12px;opacity:.85;direction:ltr;text-align:center}
+.sec .lyr[hidden]{display:none}
+body:has(#mini:not([hidden])) #toast{bottom:calc(92px + env(safe-area-inset-bottom,0px))}
 .langbtn{margin-inline-start:auto;border:2px solid #e9d8ff;background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer}
 </style>
 </head>
@@ -200,71 +235,90 @@ div.gh{border:0;cursor:default}
   </div>
 
   <div id="studio">
-    <section class="card" id="projCard" hidden>
-      <div class="step"><i>☁️</i>הפרויקטים שלי</div>
-      <div id="projList"></div>
+    <!-- השיר הפתוח: שם, שמירה ומעבר בין שירים -->
+    <section class="pbar" id="projBar" hidden>
+      <div class="ptop">
+        <input dir="auto" class="ptitle" id="pTitle" maxlength="40" placeholder="שם השיר" aria-label="שם השיר">
+        <button class="sbtn" id="projBtn">📂 השירים שלי</button>
+        <button class="sbtn" id="newProj">➕ חדש</button>
+      </div>
       <p class="sync" id="syncState"></p>
-      <button class="go sec2" id="newProj">➕ פרויקט חדש</button>
     </section>
 
-    <section class="card">
-      <div class="step"><i>1</i>השירה שלך</div>
-      <div class="duo">
-        <button class="big-btn" id="recBtn"><b>🎙️</b><span>הקלטה</span></button>
-        <button class="big-btn" id="upBtn"><b>📁</b><span>העלאת קובץ</span></button>
+    <!-- ניווט מהיר בין השלבים -->
+    <nav class="steps" id="steps" hidden aria-label="שלבים">
+      <button data-t="voiceCard">🎤 שירה</button>
+      <button data-t="secCard">✂️ קטעים</button>
+      <button data-t="modeCard">🎸 סגנון</button>
+      <button data-t="arrCard">🎛️ מיקס</button>
+    </nav>
+
+    <section class="card" id="voiceCard">
+      <div id="startBox">
+        <h2 class="hello">איך מתחילים שיר חדש?</h2>
+        <div class="duo">
+          <button class="big-btn" id="recBtn"><b>🎙️</b><span>הקלטה</span></button>
+          <button class="big-btn" id="upBtn"><b>📁</b><span>העלאת קובץ</span></button>
+        </div>
+        <div class="meter" id="meter" hidden><div></div></div>
+        <p class="hint" id="recHint">שרים עם מילים או בלי, או רק מזמזמים את המנגינה. עד 5 דקות.</p>
+        <button class="big-btn wide" id="nvBtn"><b>🎹</b><span>אין לי עדיין שירה: תכיני לי מוזיקה<small>ביט לשיר עליו, מנגינה מנחה או מילים, בסגנון שבוחרים</small></span></button>
+        <button class="go sec2" id="openSaved" hidden>📂 לפתוח שיר שמור</button>
       </div>
       <input type="file" id="upFile" accept="audio/*,video/*" hidden>
-      <div class="meter" id="meter" hidden><div></div></div>
-      <p class="hint" id="recHint">אפשר לשיר עם מילים או בלי, ואפשר גם רק לזמזם את המנגינה. עד 5 דקות.</p>
-      <button class="go sec2 nvbtn" id="nvBtn">🎹 אין לך עדיין שירה? אכין לך מוזיקה</button>
-      <p class="hint" id="nvInfo" hidden></p>
-      <div id="waveBox" hidden>
-        <canvas class="wave" id="wave"></canvas>
-        <div class="tools">
-          <button class="sbtn pri" id="vPlay">▶ השמעה</button>
-          <button class="sbtn" id="vCut">✂️ חיתוך כאן</button>
-          <button class="sbtn" id="vAuto">🪄 חלוקה אוטומטית</button>
-          <span class="clock" id="vClock">0:00 / 0:00</span>
+      <div id="voiceBox" hidden>
+        <div class="step"><i>1</i>השירה שלך</div>
+        <p class="hint" id="nvInfo" hidden></p>
+        <div id="waveBox" hidden>
+          <canvas class="wave" id="wave"></canvas>
+          <div class="tools">
+            <button class="sbtn pri" id="vPlay">▶ השמעה</button>
+            <button class="sbtn" id="vCut">✂️ חיתוך כאן</button>
+            <button class="sbtn" id="vAuto">🪄 חלוקה אוטומטית</button>
+            <span class="clock" id="vClock">0:00 / 0:00</span>
+          </div>
+          <p class="hint">לוחצים על גלי הקול כדי לקפוץ למקום, ואז "חיתוך כאן" כדי להתחיל שם קטע חדש.</p>
         </div>
-        <p class="hint">לוחצים על גלי הקול כדי לקפוץ למקום מסוים, ואז על "חיתוך כאן" כדי להתחיל שם קטע חדש.</p>
       </div>
     </section>
 
     <section class="card" id="secCard" hidden>
       <div class="step"><i>2</i>הקטעים ומה את רוצה בכל אחד</div>
+      <p class="hint" style="margin-top:-4px">כותבים לכל קטע מה רוצים לשמוע בו. ✍️ פותח מקום למילים.</p>
       <div id="secList"></div>
     </section>
 
     <section class="card" id="modeCard" hidden>
-      <div class="step"><i>3</i>הלחן</div>
-      <div class="mode" id="modeBox">
-        <label><input type="radio" name="mode" value="mine" checked><span><b>🎵 זמזמתי את הלחן</b><small>זמזמתי או שרתי את המנגינה בפה. האתר יזהה את התווים וינגן אותם בכלי שאבחר, וה-AI יוסיף ליווי סביבם.</small></span></label>
-        <label><input type="radio" name="mode" value="ai"><span><b>🤖 שה-AI ילחין</b><small>ה-AI ימציא מנגינה וליווי מתאימים לשירה שלי.</small></span></label>
-      </div>
-      <div id="instBox">
-        <p class="hint" style="margin-top:12px;font-weight:700;color:var(--ink)">באיזה כלי לנגן את המנגינה שזמזמתי?</p>
-        <div class="chips" id="insts" role="group" aria-label="כלי נגינה"></div>
-      </div>
-      <div class="refbox">
-        <p class="hint" style="margin-top:0;font-weight:700;color:var(--ink)">🎸 סגנון</p>
+      <div class="step"><i>3</i>סגנון ולחן</div>
+      <div class="sub">
+        <p class="subt">🎸 סגנון</p>
         <div class="chips" id="genres" role="group" aria-label="סגנון"></div>
         <input dir="auto" class="txt" id="genreTxt" maxlength="80" placeholder="או תארו סגנון במילים, למשל: טראפ אפל, רוק של שנות ה-90" aria-label="תיאור הסגנון">
       </div>
-      <div class="refbox">
-        <p class="hint" style="margin-top:0;font-weight:700;color:var(--ink)">🎧 שירי רפרנס (לא חובה)</p>
-        <p class="hint">מעלים שיר שאוהבים, וה-AI לומד ממנו את האנרגיה, הצבע והכלים. השיר עצמו לא נשמר ולא מועתק.</p>
-        <div class="tools"><button class="sbtn" id="refBtn">➕ הוספת שיר רפרנס</button><button class="sbtn" id="refLink">🔗 הדבקת קישור</button></div>
+      <div class="sub" id="modeWrap">
+        <p class="subt">🎵 המנגינה</p>
+        <div class="mode" id="modeBox">
+          <label><input type="radio" name="mode" value="mine" checked><span><b>🎵 זמזמתי את הלחן</b><small>האתר יזהה את התווים שזמזמת וינגן אותם בכלי שתבחרי.</small></span></label>
+          <label><input type="radio" name="mode" value="ai"><span><b>🤖 שה-AI ילחין</b><small>ה-AI ימציא מנגינה שמתאימה לשירה שלך.</small></span></label>
+        </div>
+        <div id="instBox">
+          <p class="hint" style="margin-top:12px;font-weight:700;color:var(--ink)">באיזה כלי לנגן את המנגינה שזמזמתי?</p>
+          <div class="chips" id="insts" role="group" aria-label="כלי נגינה"></div>
+        </div>
+      </div>
+      <div class="sub">
+        <p class="subt">🎧 שירי השראה <span class="opt">לא חובה</span></p>
+        <p class="hint" style="margin-top:0">ה-AI לומד מהם קצב, סולם ואנרגיה. השירים עצמם לא נשמרים.</p>
+        <div class="tools"><button class="sbtn" id="refBtn">➕ קובץ</button><button class="sbtn" id="refLink">🔗 קישור</button></div>
         <input type="file" id="refFile" accept="audio/*,video/*" hidden>
         <div id="refList"></div>
       </div>
       <button class="go" id="toArrange" disabled>🎛️ לבנות את הכלים</button>
-      <div class="note">הפרויקט נשמר אוטומטית בדפדפן</div>
     </section>
 
     <section class="card" id="arrCard" hidden>
-      <div class="step"><i>4</i>הרצועות</div>
-      <input dir="auto" class="txt" id="pTitle" maxlength="40" placeholder="שם השיר" aria-label="שם השיר">
-      <p class="hint" id="detInfo"></p>
+      <div class="step"><i>4</i>המיקס</div>
+      <p class="hint" id="detInfo" style="margin-top:-4px"></p>
       <canvas class="wave roll" id="roll" aria-label="המנגינה שזיהיתי"></canvas>
       <div class="tools">
         <button class="sbtn pri" id="mPlay">▶ השמעת השיר</button>
@@ -273,12 +327,17 @@ div.gh{border:0;cursor:default}
         <span class="clock" id="mClock">0:00</span>
       </div>
       <div class="gridwrap"><div class="grid" id="grid"></div></div>
-      <div class="tools"><button class="sbtn" id="rangeBtn">⏱️ שינוי בטווח זמן</button><span class="hint" style="margin:0">להנמיך את המוזיקה או להוריד כלים מדקה X עד דקה Y</span></div>
-      <div id="editList"></div>
       <p class="learned" id="learned" hidden></p>
-      <p class="hint">לחיצה על משבצת פותחת עריכה: הדלקה וכיבוי, 👍 או 👎, סגנון נגינה, ובשורה של הקול גם אוטו-טיון ואפקטים. לחיצה על שם של כלי מאפשרת להחליף אותו, לשנות עוצמה או להשתיק. לחיצה על שם של קטע מנגנת מתחילתו.</p>
-      <button class="go sec2" id="addTrack">➕ הוספת כלי</button>
-      <button class="go sec2" id="reArr">🔄 לבנות מחדש לפי ההוראות</button>
+      <details class="how">
+        <summary>❓ איך עורכים את הרצועות?</summary>
+        <p class="hint">לחיצה על משבצת: הדלקה וכיבוי, 👍 או 👎, סגנון נגינה, ובשורת הקול גם אוטו-טיון ואפקטים. לחיצה על שם של כלי: החלפה, עוצמה או השתקה. לחיצה על שם של קטע: השמעה מתחילתו. ואפשר פשוט לבקש בצ'אט 💬</p>
+      </details>
+      <div class="tools tools3">
+        <button class="sbtn" id="addTrack">➕ הוספת כלי</button>
+        <button class="sbtn" id="rangeBtn">⏱️ טווח זמן</button>
+        <button class="sbtn" id="reArr">🔄 לבנות מחדש</button>
+      </div>
+      <div id="editList"></div>
     </section>
   </div>
 
@@ -348,6 +407,13 @@ div.gh{border:0;cursor:default}
   <button class="langbtn" id="gLang" style="margin:0">English</button>
 </div></div>
 
+<div class="mini" id="mini" hidden><div class="minin">
+  <button class="mbtn main" id="miniPlay" aria-label="השמעה או עצירה">▶</button>
+  <div class="mmid" id="miniBar" role="slider" aria-label="מיקום בשיר"><div class="mbar"><div id="miniFill"></div></div><span id="miniClock">0:00 / 0:00</span></div>
+  <button class="mbtn re" id="miniRe" hidden aria-label="לבנות מחדש">🔄</button>
+  <button class="mbtn" id="miniMp3" aria-label="הורדת MP3">⬇</button>
+  <button class="mbtn" id="miniChat" aria-label="צ'אט על השיר">💬</button>
+</div></div>
 <button class="fab" id="chatFab" hidden aria-label="צ'אט על השיר">💬</button>
 <div id="chat" class="chat" hidden><div class="cbox" role="dialog" aria-modal="true">
   <div class="ph"><b id="chatTitle">💬</b><button id="chatX" aria-label="סגירה">✕</button></div>
@@ -837,6 +903,19 @@ Object.assign(EN,{
 "Gemini לא מקבל את המפתח. כדאי ליצור מפתח חדש ב-AI Studio ולהחליף אותו ב-Secrets":"Gemini doesn't accept the key. Create a new key in AI Studio and replace it in Secrets"
 });
 Object.assign(EN,{"ה-AI של Google עמוס כרגע. נסי שוב בעוד דקה או שתיים 🙏":"Google's AI is busy right now. Try again in a minute or two 🙏"});
+Object.assign(EN,{
+"📂 השירים שלי":"📂 My songs","➕ חדש":"➕ New","➕ שיר חדש":"➕ New song","שלבים":"Steps","🎤 שירה":"🎤 Vocals","✂️ קטעים":"✂️ Sections","🎸 סגנון":"🎸 Style","🎛️ מיקס":"🎛️ Mix",
+"איך מתחילים שיר חדש?":"How do you want to start a new song?","שרים עם מילים או בלי, או רק מזמזמים את המנגינה. עד 5 דקות.":"Sing with or without words, or just hum the tune. Up to 5 minutes.",
+"אין לי עדיין שירה: תכיני לי מוזיקה":"No vocals yet: make me music","ביט לשיר עליו, מנגינה מנחה או מילים, בסגנון שבוחרים":"A beat to sing over, a guide melody or lyrics, in the style you choose",
+"📂 לפתוח שיר שמור":"📂 Open a saved song","לוחצים על גלי הקול כדי לקפוץ למקום, ואז \"חיתוך כאן\" כדי להתחיל שם קטע חדש.":"Tap the waveform to jump to a spot, then \"Cut here\" to start a new section there.",
+"כותבים לכל קטע מה רוצים לשמוע בו. ✍️ פותח מקום למילים.":"Write what you want to hear in each section. ✍️ opens a space for lyrics.",
+"סגנון ולחן":"Style & melody","🎵 המנגינה":"🎵 The melody","האתר יזהה את התווים שזמזמת וינגן אותם בכלי שתבחרי.":"The site detects the notes you hummed and plays them on the instrument you choose.",
+"ה-AI ימציא מנגינה שמתאימה לשירה שלך.":"The AI invents a melody that fits your singing.","🎧 שירי השראה":"🎧 Inspiration songs","לא חובה":"optional",
+"ה-AI לומד מהם קצב, סולם ואנרגיה. השירים עצמם לא נשמרים.":"The AI learns tempo, key and energy from them. The songs themselves aren't saved.",
+"➕ קובץ":"➕ File","🔗 קישור":"🔗 Link","המיקס":"The mix","❓ איך עורכים את הרצועות?":"❓ How do I edit the tracks?",
+"לחיצה על משבצת: הדלקה וכיבוי, 👍 או 👎, סגנון נגינה, ובשורת הקול גם אוטו-טיון ואפקטים. לחיצה על שם של כלי: החלפה, עוצמה או השתקה. לחיצה על שם של קטע: השמעה מתחילתו. ואפשר פשוט לבקש בצ'אט 💬":"Tap a cell: on/off, 👍 or 👎, playing style, and on the vocal row also autotune and effects. Tap an instrument name: swap it, set volume or mute. Tap a section name: play from its start. Or just ask in the chat 💬",
+"⏱️ טווח זמן":"⏱️ Time range","🔄 לבנות מחדש":"🔄 Rebuild","השמעה או עצירה":"Play or pause","מיקום בשיר":"Position in the song","לבנות מחדש":"Rebuild","הורדת MP3":"Download MP3"
+});
 
 "use strict";
 /* ============ שיר לי: מנוע שירים, אנימציה והורדות. הכול רץ בדפדפן, בחינם ובלי אינטרנט ============ */
@@ -1583,14 +1662,16 @@ function renderSecs(){
     const rng=document.createElement("span");rng.className="rng";rng.textContent=fmt(a)+"–"+fmt(b);
     const acts=document.createElement("div");acts.className="acts";
     const pl=document.createElement("button");pl.textContent="▶";pl.title=T_("השמעת הקטע");pl.setAttribute("aria-label",T_("השמעת הקטע"));pl.onclick=()=>vPlay(a,b);
-    acts.append(pl);
+    const lw=document.createElement("button");lw.textContent="✍️";lw.title=T_("מילים לקטע");lw.setAttribute("aria-label",T_("מילים לקטע"));
+    acts.append(pl,lw);
     if(i<proj.cuts.length){const mg=document.createElement("button");mg.textContent="🔗";mg.title=T_("איחוד עם הקטע הבא");mg.setAttribute("aria-label",T_("איחוד עם הקטע הבא"));mg.onclick=()=>mergeNext(i);acts.append(mg)}
     top.append(sel,rng,acts);
     const ta=document.createElement("textarea");ta.dir="auto";ta.maxLength=400;ta.value=s.note;
     ta.placeholder=T_(["למשל: רק פסנתר שקט, בלי תופים","למשל: פה שייכנסו תופים חזקים וגיטרה","למשל: שהקול שלי יהיה גבוה יותר ועם הדהוד","למשל: להוסיף קולות רקע שלי"][i%4]);ta.setAttribute("aria-label",T_("מה את רוצה בקטע הזה?"));
     ta.oninput=()=>{s.note=ta.value;saveProj();markDirty()};
     const ly=document.createElement("textarea");ly.dir="auto";ly.className="lyr";ly.maxLength=600;ly.value=s.lyr||"";ly.placeholder=T_("✍️ מילים לקטע (לא חובה, יופיעו בווידאו)");ly.setAttribute("aria-label",T_("מילים לקטע"));
-    ly.oninput=()=>{s.lyr=ly.value;saveProj()};
+    ly.oninput=()=>{s.lyr=ly.value;saveProj()};ly.hidden=!(s.lyr||"").trim();
+    lw.onclick=()=>{ly.hidden=!ly.hidden;if(!ly.hidden)ly.focus()};
     d.append(top,ta,ly);L.append(d);
   });
 }
@@ -2238,12 +2319,14 @@ async function runBuild(){
   if(!proj.mono)return;
   const btns=[$("toArrange"),$("reArr")];btns.forEach(b=>b.disabled=true);mixStop();$("reArr").classList.remove("pri");
   const lbl=$("toArrange").textContent;
+  const my=proj.mono; // אם בינתיים נפתח שיר אחר, הבנייה הישנה נעצרת בשקט
   try{
     await buildTracks((msg,p)=>{$("toArrange").textContent=T_(msg)+" "+Math.round(p*100)+"%"});
+    if(proj.mono!==my||!proj.det){btns.forEach(b=>b.disabled=false);$("toArrange").textContent=lbl;return}
     showArr();
     if(proj.mode==="mine"&&!proj.noVoice&&proj.det.notes.length<4)toast(T_("כמעט לא זיהיתי מנגינה. נסי לזמזם ברור יותר, בלי רעשי רקע"),5000);
     else toast(T_("הכלים מוכנים! לחצי ▶ כדי לשמוע 🎶"));
-  }catch(e){console.error(e);toast(T_("משהו השתבש בבניית הכלים. נסי שוב"))}
+  }catch(e){console.error(e);if(proj.mono===my&&proj.det)toast(T_("משהו השתבש בבניית הכלים. נסי שוב"))}
   btns.forEach(b=>b.disabled=false);$("toArrange").textContent=lbl;
 }
 $("toArrange").onclick=async()=>{await runBuild();$("arrCard").scrollIntoView({behavior:"smooth",block:"start"})};
@@ -2517,7 +2600,8 @@ function rerenderAll(){
   $("langBtn").textContent=LANG==="he"?"English":"עברית";$("gLang").textContent=$("langBtn").textContent;if(window.cloud)renderProjects();
   if(typeof restyleChips==="function")restyleChips();
   if(typeof renderList==="function")renderList();
-  if(proj.mono){renderSecs();peaksCache=null;drawWave();renderInsts();renderRefs();renderGenres()}
+  if(proj.mono){renderSecs();peaksCache=null;drawWave();renderInsts();renderRefs();renderGenres();renderModeUI()}
+  if(window.cloud)setSync(syncLast); // רק אחרי שקוד הענן נטען
   if(typeof renderChat==="function"&&!$("chat").hidden)renderChat();
   if(proj.arr&&!$("arrCard").hidden)showArr();
 }
@@ -2560,7 +2644,7 @@ $("genreTxt").onchange=()=>{const t=$("genreTxt").value.trim();const g=genreFrom
   if(t&&!g)toast(T_("לא זיהיתי סגנון מהתיאור. אפשר לבחור סגנון למעלה, או לבקש מהצ'אט 💬"),4500);
   else if(g)toast(T_("סגנון: {g}. לחצי \"לבנות\" כדי לשמוע",{g:T_(GENRES[g].name)}))};
 function renderModeUI(){
-  const nv=!!proj.noVoice;$("modeBox").hidden=nv;$("nvInfo").hidden=!nv;
+  const nv=!!proj.noVoice;$("modeWrap").hidden=nv;$("nvInfo").hidden=!nv;
   if(nv)$("nvInfo").textContent=T_("🎹 מוזיקה בלי שירה ({d}). אפשר להוריד MP3 ולשיר עליה, או לבקש מהצ'אט מילים 💬",{d:fmt(proj.dur)});
   renderInsts();
 }
@@ -2764,13 +2848,13 @@ function showGate(state){
 function enter(){
   $("gate").hidden=true;$("acct").hidden=false;
   $("acct").textContent=(me&&me.email?me.email[0]:"?").toUpperCase();
-  $("projCard").hidden=false;cloudPull();
+  cloudPull();
 }
 async function cloudInit(){
   if(!cloudOn()){$("gate").hidden=true;return}
   showGate("wait");
   sb=window.supabase.createClient(CLOUD.url,CLOUD.key,{auth:{persistSession:true,detectSessionInUrl:true,flowType:"pkce"}});
-  sb.auth.onAuthStateChange((ev)=>{if(ev==="SIGNED_OUT"){me=null;member=false;$("acct").hidden=true;$("projCard").hidden=true;showGate("login")}});
+  sb.auth.onAuthStateChange((ev)=>{if(ev==="SIGNED_OUT"){me=null;member=false;$("acct").hidden=true;showGate("login")}});
   let session=null;
   try{session=(await sb.auth.getSession()).data.session}catch(e){}
   if(!session){showGate("login");return}
@@ -2804,7 +2888,7 @@ $("gLang").onclick=()=>$("langBtn").click();
 $("acct").onclick=()=>openSheet(T_("החשבון שלי"),B=>{
   B.append(el("p","hint",me?me.email:""));
   const r=el("div","tools");
-  r.append(el("button","sbtn",T_("📂 הפרויקטים שלי"),()=>{closeSheet();showTab("studio");$("projCard").scrollIntoView({behavior:"smooth"})}),
+  r.append(el("button","sbtn",T_("📂 השירים שלי"),()=>{showTab("studio");openProjects()}),
     el("button","sbtn",T_("יציאה מהחשבון"),async()=>{closeSheet();await sb.auth.signOut()}));
   B.append(r);
 });
@@ -2813,7 +2897,8 @@ $("acct").onclick=()=>openSheet(T_("החשבון שלי"),B=>{
 const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function metaOf(){const d=proj.det?Object.assign({},proj.det,{f0:undefined}):null;
   return Object.assign(projMeta(),{det:d,id:undefined})}
-function setSync(s){const m={saving:"⏳ "+T_("שומרת בענן..."),saved:"☁️ "+T_("הכול שמור בענן"),offline:"⚠️ "+T_("אין חיבור. נשמר במכשיר, ויעלה לענן כשהחיבור יחזור"),idle:""};$("syncState").textContent=m[s]||""}
+let syncLast="idle";
+function setSync(s){syncLast=s;const m={saving:"⏳ "+T_("שומרת בענן..."),saved:"☁️ "+T_("הכול שמור בענן"),offline:"⚠️ "+T_("אין חיבור. נשמר במכשיר, ויעלה לענן כשהחיבור יחזור"),idle:""};$("syncState").textContent=m[s]||""}
 let upT=0,upBusy=false,upAgain=false;
 function cloudQueue(){if(!member||!sb||!proj.mono)return;clearTimeout(upT);setSync("saving");upT=setTimeout(cloudPush,2500)}
 async function cloudPush(){
@@ -2860,17 +2945,18 @@ async function cloudPull(){
 }
 async function refreshProjects(){const {data}=await sb.from("items").select("id,kind,title,data,audio_path,updated_at").order("updated_at",{ascending:false});if(data){cloudRows=data;renderProjects()}}
 function renderProjects(){
-  const L=$("projList");L.replaceChildren();const st=cloudRows.filter(r=>r.kind==="studio");
+  // הרשימה חיה בחלונית "השירים שלי"
+  const L=$("projList");if(!L)return;L.replaceChildren();const st=cloudRows.filter(r=>r.kind==="studio");
   if(!st.length){L.append(el("p","hint",T_("עוד אין פרויקטים בענן. הקליטי או העלי שירה, והיא תישמר כאן אוטומטית.")));return}
   for(const r of st){
     const d=el("div","refitem");const cur=r.id===proj.id;
     const when=new Date(r.updated_at).toLocaleDateString(LANG==="he"?"he-IL":"en-GB",{day:"numeric",month:"short"});
     const nm=el("span",null,(r.title||T_("השיר שלי"))+" · "+when+(cur?" · "+T_("פתוח עכשיו"):""));if(cur)nm.style.fontWeight="700";
     d.append(nm);
-    if(!cur)d.append(el("button",null,"📂",()=>openCloudProject(r)));
+    if(!cur)d.append(el("button",null,"📂",()=>{closeSheet();openCloudProject(r)}));
     const del=el("button",null,"🗑",async()=>{if(!await askConfirm(T_("למחוק את הפרויקט \"{t}\" מהענן?",{t:r.title||T_("השיר שלי")}),T_("🗑 למחוק")))return;
       await sb.from("items").delete().eq("id",r.id);if(r.audio_path)await sb.storage.from("audio").remove([r.audio_path]);
-      if(cur){proj.id=null}refreshProjects();toast(T_("הפרויקט נמחק מהענן"))});
+      if(cur){proj.id=null}openProjects();toast(T_("הפרויקט נמחק מהענן"))});
     del.setAttribute("aria-label",T_("מחיקה"));d.append(del);L.append(d);
   }
 }
@@ -3126,8 +3212,6 @@ $("chatX").onclick=()=>{$("chat").hidden=true};
 $("chat").onclick=e=>{if(e.target.id==="chat")$("chat").hidden=true};
 $("chatForm").onsubmit=e=>{e.preventDefault();const v=$("chatIn").value;$("chatIn").value="";chatAsk(v)};
 $("chatIn").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("chatForm").requestSubmit()}};
-// כפתור הצ'אט מופיע כשיש פרויקט פתוח באולפן
-setInterval(()=>{$("chatFab").hidden=!(proj.mono&&!$("studio").hidden&&$("chat").hidden&&$("gate").hidden)},700);
 window.chat={chatAsk,runTool,chatTools,chatSystem,histContents}; // לבדיקות
 
 // ---------- שיר השראה מקישור: יוטיוב (ה-AI מאזין לסרטון), ספוטיפיי, סאונדקלאוד ועוד (לפי שם השיר) ----------
@@ -3189,6 +3273,50 @@ function openLinkSheet(){
 }
 $("refLink").onclick=()=>openLinkSheet();
 Object.assign(window.chat,{analyzeLink,parseKey,linkInfo});
+
+"use strict";
+/* ============ חוויית שימוש: מסך פתיחה, פס השיר הפתוח, ניווט בין השלבים ונגן צף ============ */
+
+// ---------- השירים שלי (חלונית) ----------
+function openProjects(){
+  openSheet(T_("📂 השירים שלי"),B=>{
+    const L=el("div");L.id="projList";B.append(L);renderProjects();
+    B.append(el("button","go sec2",T_("➕ שיר חדש"),()=>{closeSheet();$("newProj").click()}));
+  });
+  refreshProjects();
+}
+$("projBtn").onclick=openProjects;
+$("openSaved").onclick=openProjects;
+
+// ---------- ניווט בין השלבים ----------
+for(const b of $("steps").children)b.onclick=()=>{const t=$(b.dataset.t);if(t&&!t.hidden)t.scrollIntoView({behavior:"smooth",block:"start"})};
+let stRaf=0;
+function markStep(){stRaf=0;let cur=null;
+  for(const b of $("steps").children){const t=$(b.dataset.t);if(t&&!t.hidden&&t.getBoundingClientRect().top<innerHeight*.35)cur=b}
+  for(const b of $("steps").children)b.classList.toggle("on",b===cur)}
+addEventListener("scroll",()=>{if(!stRaf)stRaf=requestAnimationFrame(markStep)},{passive:true});
+
+// ---------- נגן צף: תמיד בהישג יד כשיש מיקס ----------
+$("miniPlay").onclick=()=>$("mPlay").click();
+$("miniMp3").onclick=()=>$("mMp3").click();
+$("miniChat").onclick=()=>$("chatFab").onclick();
+$("miniRe").onclick=()=>runBuild();
+$("miniBar").onclick=e=>{const r=e.currentTarget.getBoundingClientRect();let f=(e.clientX-r.left)/r.width;if(isRTL())f=1-f;
+  const t=Math.max(0,Math.min(proj.dur-.1,f*proj.dur));if(mix)mixPlay(t);else{mixFrom=t;drawRoll();paintGrid()}};
+
+// ---------- מה מוצג בכל רגע ----------
+function uiSync(){
+  const has=!!proj.mono,inStudio=!$("studio").hidden,cloudOk=!!(typeof member!=="undefined"&&member&&sb);
+  $("startBox").hidden=has;$("voiceBox").hidden=!has;$("projBar").hidden=!has;$("steps").hidden=!has;
+  $("projBtn").hidden=!cloudOk;$("openSaved").hidden=!(cloudOk&&cloudRows.some(r=>r.kind==="studio"));
+  for(const b of $("steps").children){const t=$(b.dataset.t);b.disabled=!t||t.hidden}
+  const miniOn=has&&inStudio&&!!tracksBuf&&!$("arrCard").hidden&&!$("player").classList.contains("open");
+  $("mini").hidden=!miniOn;
+  $("chatFab").hidden=!(has&&inStudio&&$("chat").hidden&&$("gate").hidden&&!miniOn);
+  if(miniOn){const t=mixNow();$("miniPlay").textContent=mix?"⏸":"▶";$("miniFill").style.width=(proj.dur?Math.min(100,t/proj.dur*100):0)+"%";
+    $("miniClock").textContent=fmt(t)+" / "+fmt(proj.dur);$("miniRe").hidden=!$("reArr").classList.contains("pri")}
+}
+setInterval(uiSync,250);uiSync();
 
 
 </script>
