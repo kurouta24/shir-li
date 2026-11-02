@@ -832,6 +832,10 @@ Object.assign(EN,{
 "🎧 ללמוד מהשיר":"🎧 Learn from the song","⏳ מאזינה לשיר...":"⏳ Listening to the song...","זה לא נראה כמו קישור":"That doesn't look like a link",
 "לא הכרתי את השיר הזה. נסי קישור מיוטיוב, או להעלות קובץ":"I don't know this song. Try a YouTube link, or upload a file"
 });
+Object.assign(EN,{
+"המפתח של Gemini לא נמצא בשרת. צריך לבדוק שב-Secrets השם הוא בדיוק GEMINI_API_KEY":"The Gemini key isn't on the server. Check that the name in Secrets is exactly GEMINI_API_KEY",
+"Gemini לא מקבל את המפתח. כדאי ליצור מפתח חדש ב-AI Studio ולהחליף אותו ב-Secrets":"Gemini doesn't accept the key. Create a new key in AI Studio and replace it in Secrets"
+});
 
 "use strict";
 /* ============ שיר לי: מנוע שירים, אנימציה והורדות. הכול רץ בדפדפן, בחינם ובלי אינטרנט ============ */
@@ -3027,10 +3031,23 @@ async function applyState(st){
 
 // ---------- השיחה ----------
 let chatBusy=false;
+async function aiError(error){
+  let code=0,msg="";
+  try{code=error.context.status;const t=await error.context.text();try{const j=JSON.parse(t);msg=(j.error&&(j.error.message||j.error))||j.detail||t}catch(e){msg=t}}catch(e){msg=String(error.message||"")}
+  const e=new Error(String(msg));e.code=code;e.msg=String(msg).slice(0,140);return e;
+}
+// הודעה ברורה לפי סוג התקלה, עם הסיבה הטכנית בסוף כדי שיהיה אפשר לאבחן
+function aiErrText(e){
+  if(e.code===429)return T_("הגעתי למכסה החינמית של ה-AI להיום או לדקה הזו. נסי שוב בעוד כמה דקות 🙏");
+  if(e.code===404)return T_("הצ'אט עוד לא הופעל בשרת. צריך להשלים את ההגדרה ב-Supabase");
+  if(e.code===403&&/not_member/.test(e.msg||""))return T_("הצ'אט פתוח רק למי שנכנס עם קוד הזמנה");
+  if(/no_key/.test(e.msg||""))return T_("המפתח של Gemini לא נמצא בשרת. צריך לבדוק שב-Secrets השם הוא בדיוק GEMINI_API_KEY");
+  if(/API key|API_KEY|PERMISSION_DENIED|permission/i.test(e.msg||""))return T_("Gemini לא מקבל את המפתח. כדאי ליצור מפתח חדש ב-AI Studio ולהחליף אותו ב-Secrets")+" ("+e.msg+")";
+  return T_("אין חיבור ל-AI כרגע. בדקי את האינטרנט ונסי שוב")+(e.code||e.msg?" ("+[e.code||"",e.msg||""].filter(Boolean).join(": ")+")":"");
+}
 async function callAI(contents){
   const {data,error}=await sb.functions.invoke(CHAT_FN,{body:{system:chatSystem(),contents,tools:chatTools()}});
-  if(error){let code=0,msg="";try{code=error.context.status;const j=await error.context.json();msg=(j.error&&(j.error.message||j.error))||""}catch(e){}
-    const e=new Error(String(msg||error.message));e.code=code;throw e}
+  if(error)throw await aiError(error);
   return data;
 }
 function histContents(){
@@ -3064,10 +3081,7 @@ async function chatAsk(text){
     }
     await applyState(st);
   }catch(e){console.warn("chat",e);
-    reply=e.code===429?T_("הגעתי למכסה החינמית של ה-AI להיום או לדקה הזו. נסי שוב בעוד כמה דקות 🙏")
-      :e.code===404?T_("הצ'אט עוד לא הופעל בשרת. צריך להשלים את ההגדרה ב-Supabase")
-      :e.code===403?T_("הצ'אט פתוח רק למי שנכנס עם קוד הזמנה")
-      :T_("אין חיבור ל-AI כרגע. בדקי את האינטרנט ונסי שוב");
+    reply=aiErrText(e);
   }
   proj.chat.push({r:"m",t:reply||(st.acts.length?T_("בוצע ✓"):"…"),acts:st.acts});
   if(proj.chat.length>60)proj.chat=proj.chat.slice(-60);
@@ -3130,12 +3144,12 @@ Set "sure" to false if you could not hear it and do not know this song.`;
   const call=async heard=>{
     const parts=heard?[{fileData:{fileUri:li.url},videoMetadata:{startOffset:"15s",endOffset:"75s"}},{text:ask(true)}]:[{text:ask(false)}];
     const {data,error}=await sb.functions.invoke(CHAT_FN,{body:{system:"You analyse songs and answer only with JSON.",contents:[{role:"user",parts}]}});
-    if(error){let code=0;try{code=error.context.status}catch(e){}const er=new Error("ai");er.code=code;throw er}
+    if(error)throw await aiError(error);
     const txt=((data&&data.candidates&&data.candidates[0].content&&data.candidates[0].content.parts)||[]).filter(p=>p.text&&!p.thought).map(p=>p.text).join("");
     return JSON.parse((txt.match(/\{[\s\S]*\}/)||["{}"])[0]);
   };
   let j=null;
-  if(li.kind==="youtube"){try{j=await call(true)}catch(e){if(e.code===429)throw e}} // סרטון פרטי או חסום: לפי השם בלבד
+  if(li.kind==="youtube"){try{j=await call(true)}catch(e){console.warn("video",e.code,e.msg);if(e.code===429||/no_key|API key|not_member/i.test(e.msg||""))throw e}} // סרטון פרטי או חסום: לפי השם בלבד
   if(!j||!j.bpm)j=await call(false);
   const key=parseKey(j.key);
   if(!j.bpm||!key||(j.sure===false&&li.kind!=="youtube")){const e=new Error("unknown");e.code="unknown";throw e}
@@ -3159,7 +3173,7 @@ function openLinkSheet(){
         toast(T_("למדתי מ\"{n}\" 🎧 ההשפעה תיכנס כשתבני את הכלים",{n:r.name}),4500);
         if(back)openComposer();else closeSheet()}
       catch(e){console.warn("link",e);go.disabled=false;go.textContent=T_("🎧 ללמוד מהשיר");
-        toast(e.code==="unknown"?T_("לא הכרתי את השיר הזה. נסי קישור מיוטיוב, או להעלות קובץ"):e.code===429?T_("הגעתי למכסה החינמית של ה-AI להיום או לדקה הזו. נסי שוב בעוד כמה דקות 🙏"):T_("אין חיבור ל-AI כרגע. בדקי את האינטרנט ונסי שוב"),5000)}
+        toast(e.code==="unknown"?T_("לא הכרתי את השיר הזה. נסי קישור מיוטיוב, או להעלות קובץ"):aiErrText(e),9000)}
     });
     B.append(go);setTimeout(()=>inp.focus(),80);
   });
