@@ -201,7 +201,7 @@ div.gh{border:0;cursor:default}
 .big-btn small{font-weight:500;font-size:13px;color:var(--muted)}
 #openSaved{margin-top:12px}
 .sub{border-top:2px dashed #f3e8ff;padding-top:12px;margin-top:14px}
-.step+.sub{border-top:0;padding-top:0;margin-top:0}
+.step+.sub,#modeCard>.sub:first-child{border-top:0;padding-top:0;margin-top:0}
 .subt{margin:0 2px 6px;font-weight:800;font-size:15px}
 .opt{font-weight:500;font-size:12px;color:var(--muted)}
 .how{margin-top:8px}.how summary{font-size:14px}
@@ -242,7 +242,11 @@ header .acct{margin-inline-start:auto}
 .hmini{display:flex;align-items:center;gap:10px;border:2px solid #fff;background:var(--card);border-radius:20px;padding:16px;font:inherit;font-size:16px;font-weight:700;color:var(--ink);cursor:pointer;box-shadow:0 6px 18px #8b5cf61a}
 .hmini b{font-size:24px}
 .set{border-top:2px dashed #f3e8ff;padding-top:14px;margin-top:14px}
-.ttl+.set{border-top:0;padding-top:0;margin-top:0}
+.set:first-child{border-top:0;padding-top:0;margin-top:0}
+header h1.htxt{background:none;-webkit-background-clip:border-box;background-clip:border-box;color:var(--ink);font-size:22px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#nvBody>.sub:first-child{border-top:0;padding-top:0;margin-top:0}
+.gc{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none;touch-action:manipulation}
+.gridhint{font-size:12px;color:var(--muted);margin:8px 2px 0}
 .set a{color:var(--purple);font-weight:700}
 .songta{min-height:300px;font-size:16px;line-height:1.6;margin-top:6px}
 #songIns{margin:10px 0 4px}
@@ -267,7 +271,7 @@ body.inproj.hasmini #toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 <div class="wrap">
   <header>
     <button class="logo" id="homeBtn" aria-label="דף הבית">♪</button>
-    <div class="htxt"><h1>שיר לי</h1><p>האולפן שלך: שרים, וה-AI בונה את השיר</p></div>
+    <h1 class="htxt" id="pageT">דף הבית</h1>
     <button class="acct" id="acct" aria-label="הגדרות">⚙️</button>
   </header>
 
@@ -289,7 +293,6 @@ body.inproj.hasmini #toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
   <section class="view" id="have" hidden>
     <button class="back" data-go="home">דף הבית</button>
     <section class="card">
-      <h2 class="ttl">🎤 יש לי שיר או מנגינה</h2>
       <div class="duo">
         <button class="big-btn" id="recBtn"><b>🎙️</b><span>הקלטה</span></button>
         <button class="big-btn" id="upBtn"><b>📁</b><span>העלאת קובץ</span></button>
@@ -303,20 +306,19 @@ body.inproj.hasmini #toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
   <!-- אין לי: מכינים מוזיקה -->
   <section class="view" id="nv" hidden>
     <button class="back" data-go="home">דף הבית</button>
-    <section class="card"><h2 class="ttl">🎹 בואו נכין מוזיקה</h2><div id="nvBody"></div></section>
+    <section class="card"><div id="nvBody"></div></section>
   </section>
 
   <!-- השירים שלי -->
   <section class="view" id="songs" hidden>
     <button class="back" data-go="home">דף הבית</button>
-    <section class="card"><h2 class="ttl">📂 השירים שלי</h2><div id="localSong"></div><div id="projList"></div></section>
+    <section class="card"><div id="localSong"></div><div id="projList"></div></section>
   </section>
 
   <!-- הגדרות -->
   <section class="view" id="settings" hidden>
     <button class="back" data-go="home">דף הבית</button>
     <section class="card">
-      <h2 class="ttl">⚙️ הגדרות</h2>
       <div class="set" id="setAcct"><p class="subt">👤 החשבון</p><p class="hint" id="sEmail" dir="ltr"></p><button class="sbtn" id="sOut">יציאה מהחשבון</button></div>
       <div class="set"><p class="subt">🌐 שפה</p><button class="sbtn" id="langBtn" aria-label="Language / שפה">English</button></div>
       <div class="set"><p class="subt">🧠 מה ה-AI לומד מה-👍 וה-👎 שלך</p>
@@ -343,7 +345,6 @@ body.inproj.hasmini #toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 
     <div class="ptab" id="pt-voice" hidden>
       <section class="card">
-        <div class="step"><i>🎤</i>ההקלטה</div>
         <div id="waveBox" hidden>
           <canvas class="wave" id="wave"></canvas>
           <div class="tools">
@@ -365,8 +366,7 @@ body.inproj.hasmini #toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 
     <div class="ptab" id="pt-song" hidden>
       <section class="card">
-        <div class="step"><i>✍️</i>השיר</div>
-        <p class="hint" style="margin-top:-4px">כותבים כאן את כל השיר. אפשר לסמן חלקים, למשל [פזמון], ואם לא מסמנים ה-AI מחלק לבד. בסוגריים כותבים מה רוצים לשמוע באותו חלק, למשל (רק פסנתר).</p>
+        <p class="hint" style="margin-top:0">כותבים כאן את כל השיר. אפשר לסמן חלקים, למשל [פזמון], ואם לא מסמנים ה-AI מחלק לבד. בסוגריים כותבים מה רוצים לשמוע באותו חלק, למשל (רק פסנתר).</p>
         <div class="chips" id="songIns"></div>
         <textarea id="songText" class="songta" dir="auto" aria-label="השיר"></textarea>
         <button class="go" id="songApply">✓ לעדכן את השיר</button>
@@ -377,7 +377,6 @@ body.inproj.hasmini #toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 
     <div class="ptab" id="pt-style" hidden>
       <section class="card" id="modeCard" hidden>
-        <div class="step"><i>🎸</i>סגנון ולחן</div>
         <div class="sub">
           <p class="subt">🎸 סגנון</p>
           <div class="chips" id="genres" role="group" aria-label="סגנון"></div>
@@ -407,13 +406,11 @@ body.inproj.hasmini #toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
 
     <div class="ptab" id="pt-mix" hidden>
       <section class="card" id="mixEmpty">
-        <div class="step"><i>🎛️</i>המיקס</div>
         <p class="hint">עוד לא נבנו כלים לשיר הזה. בוחרים סגנון ולוחצים "לבנות את הכלים".</p>
         <button class="go" data-next="style">🎸 לבחירת סגנון</button>
       </section>
       <section class="card" id="arrCard" hidden>
-        <div class="step"><i>🎛️</i>המיקס</div>
-        <p class="hint" id="detInfo" style="margin-top:-4px"></p>
+        <p class="hint" id="detInfo" style="margin-top:0"></p>
         <p class="hint" id="nvInfo" hidden></p>
         <canvas class="wave roll" id="roll" aria-label="המנגינה שזיהיתי"></canvas>
         <div class="tools">
@@ -422,11 +419,12 @@ body.inproj.hasmini #toast{bottom:calc(150px + env(safe-area-inset-bottom,0px))}
           <button class="sbtn" id="mVid">🎬 אנימציה ווידאו</button>
           <span class="clock" id="mClock">0:00</span>
         </div>
+        <p class="gridhint">לחיצה מדליקה או מכבה ✓ · לחיצה ארוכה פותחת עריכה: 👍 👎, סגנון נגינה ואפקטים</p>
         <div class="gridwrap"><div class="grid" id="grid"></div></div>
         <p class="learned" id="learned" hidden></p>
         <details class="how">
           <summary>❓ איך עורכים את הרצועות?</summary>
-          <p class="hint">לחיצה על משבצת: הדלקה וכיבוי, 👍 או 👎, סגנון נגינה, ובשורת הקול גם אוטו-טיון ואפקטים. לחיצה על שם של כלי: החלפה, עוצמה או השתקה. לחיצה על שם של קטע: השמעה מתחילתו. ואפשר פשוט לבקש בצ'אט 💬</p>
+          <p class="hint">לחיצה על משבצת מדליקה או מכבה את הכלי באותו חלק. לחיצה ארוכה על משבצת פותחת עריכה: 👍 או 👎, סגנון נגינה, ובשורת הקול גם אוטו-טיון ואפקטים. לחיצה על שם של כלי: החלפה, עוצמה או השתקה. לחיצה על שם של חלק: השמעה מתחילתו. ואפשר פשוט לבקש בצ'אט 💬</p>
         </details>
         <div class="tools tools3">
           <button class="sbtn" id="addTrack">➕ הוספת כלי</button>
@@ -1048,6 +1046,14 @@ Object.assign(EN,{
 "האורך והחלקים של השיר ייקבעו לפי המילים. בסוגריים כותבים מה רוצים לשמוע, למשל (רק פסנתר).":"The song's length and parts follow your lyrics. In parentheses, write what you want to hear, like (piano only).",
 "על מה השיר? למשל: על חברות שלא נגמרת":"What's the song about? e.g. a friendship that never ends","⏱️ אורך":"⏱️ Length","🎧 שירי השראה (לא חובה)":"🎧 Inspiration songs (optional)",
 "כתבי קודם את המילים 🙂":"Write the lyrics first 🙂","צ'אט על השיר":"Chat about the song"
+});
+Object.assign(EN,{
+"🎤 יש לי שיר או מנגינה":"🎤 I have a song or melody","🎹 בואו נכין מוזיקה":"🎹 Let's make music","📂 השירים שלי":"📂 My songs","⚙️ הגדרות":"⚙️ Settings","✨ יצירה מהירה":"✨ Quick create",
+"🎤 ההקלטה":"🎤 Recording","✍️ השיר":"✍️ Song","🎸 סגנון ולחן":"🎸 Style & melody","🎛️ המיקס":"🎛️ Mix","פתוח עכשיו":"open now",
+"למחוק את השיר \"{t}\"?":"Delete the song \"{t}\"?","השיר נמחק":"Song deleted","🗑 למחוק":"🗑 Delete",
+"אין חיבור כרגע. השיר נשמר במכשיר ויסתנכרן כשהחיבור יחזור":"No connection right now. The song is saved on this device and will sync when you're back online",
+"לחיצה מדליקה או מכבה ✓ · לחיצה ארוכה פותחת עריכה: 👍 👎, סגנון נגינה ואפקטים":"Tap turns ✓ on or off · Long-press opens editing: 👍 👎, playing style and effects",
+"לחיצה על משבצת מדליקה או מכבה את הכלי באותו חלק. לחיצה ארוכה על משבצת פותחת עריכה: 👍 או 👎, סגנון נגינה, ובשורת הקול גם אוטו-טיון ואפקטים. לחיצה על שם של כלי: החלפה, עוצמה או השתקה. לחיצה על שם של חלק: השמעה מתחילתו. ואפשר פשוט לבקש בצ'אט 💬":"Tap a cell to turn that instrument on or off in that part. Long-press a cell to edit: 👍 or 👎, playing style, and on the vocal row also autotune and effects. Tap an instrument name: swap it, set volume or mute. Tap a part name: play from its start. Or just ask in the chat 💬"
 });
 
 "use strict";
@@ -2358,10 +2364,18 @@ function renderGrid(){
     const nm=document.createElement("button");nm.className="gn"+(proj.arr.mute[tr.id]?" muted":"");nm.textContent=tr.emoji+" "+T_(tr.name);
     nm.onclick=()=>openTrackSheet(tr);g.append(nm);
     R.forEach((_,i)=>{const b=document.createElement("button");b.className="gc";b.dataset.k=tr.id;b.dataset.i=i;b.style.setProperty("--c",SEC_COLORS[i%SEC_COLORS.length]);
-      b.onclick=()=>openCellSheet(tr,i);g.append(b)});
+      cellPress(b,()=>{const u=proj.arr.user[tr.id]=proj.arr.user[tr.id]||[];u[i]=!cellOn(tr.id,i);saveProj();paintGrid();mixRestart()},()=>openCellSheet(tr,i));g.append(b)});
   }
   paintGrid();
   const l=learned();$("learned").hidden=!l.length;$("learned").textContent=l.length?T_("💡 ה-AI למד שאת אוהבת: ")+l.join(" · "):"";
+}
+// לחיצה קצרה ולחיצה ארוכה על אותו כפתור (לחיצה ימנית במחשב = לחיצה ארוכה)
+function cellPress(b,tap,hold){
+  let t=0,held=false;
+  b.addEventListener("pointerdown",()=>{held=false;clearTimeout(t);t=setTimeout(()=>{held=true;if(navigator.vibrate)navigator.vibrate(15);hold()},450)});
+  for(const ev of ["pointerup","pointerleave","pointercancel"])b.addEventListener(ev,()=>clearTimeout(t));
+  b.addEventListener("contextmenu",e=>{e.preventDefault();if(!held){clearTimeout(t);held=true;hold()}});
+  b.onclick=()=>{if(held){held=false;return}tap()};
 }
 function paintGrid(){
   if(!proj.arr)return;const R=ranges(),t=mixNow(),cur=mix?R.findIndex(([a,b])=>t>=a&&t<b):-1;
@@ -3041,7 +3055,8 @@ const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function metaOf(){const d=proj.det?Object.assign({},proj.det,{f0:undefined}):null;
   return Object.assign(projMeta(),{det:d,id:undefined})}
 let syncLast="idle";
-function setSync(s){syncLast=s;const m={saving:"⏳ "+T_("שומרת בענן..."),saved:"☁️ "+T_("הכול שמור בענן"),offline:"⚠️ "+T_("אין חיבור. נשמר במכשיר, ויעלה לענן כשהחיבור יחזור"),idle:""};$("syncState").textContent=m[s]||""}
+// מציגים רק כשיש בעיה. כשהכול תקין השמירה שקופה
+function setSync(s){syncLast=s;$("syncState").textContent=s==="offline"?"⚠️ "+T_("אין חיבור כרגע. השיר נשמר במכשיר ויסתנכרן כשהחיבור יחזור"):""}
 let upT=0,upBusy=false,upAgain=false;
 function cloudQueue(){if(!member||!sb||!proj.mono)return;clearTimeout(upT);setSync("saving");upT=setTimeout(cloudPush,2500)}
 async function cloudPush(){
@@ -3090,16 +3105,16 @@ async function refreshProjects(){const {data}=await sb.from("items").select("id,
 function renderProjects(){
   // הרשימה חיה בחלונית "השירים שלי"
   const L=$("projList");if(!L)return;L.replaceChildren();const st=cloudRows.filter(r=>r.kind==="studio");
-  if(!st.length){L.append(el("p","hint",T_("עוד אין פרויקטים בענן. הקליטי או העלי שירה, והיא תישמר כאן אוטומטית.")));return}
+  if(!st.length){if(!proj.mono)L.append(el("p","hint",T_("עוד אין שירים. מתחילים מדף הבית 🎶")));return}
   for(const r of st){
     const d=el("div","refitem");const cur=r.id===proj.id;
     const when=new Date(r.updated_at).toLocaleDateString(LANG==="he"?"he-IL":"en-GB",{day:"numeric",month:"short"});
     const nm=el("span",null,(r.title||T_("השיר שלי"))+" · "+when+(cur?" · "+T_("פתוח עכשיו"):""));if(cur)nm.style.fontWeight="700";
     d.append(nm);
     if(!cur)d.append(el("button",null,"📂",()=>openCloudProject(r)));else d.append(el("button",null,"▶",()=>go("studio")));
-    const del=el("button",null,"🗑",async()=>{if(!await askConfirm(T_("למחוק את הפרויקט \"{t}\" מהענן?",{t:r.title||T_("השיר שלי")}),T_("🗑 למחוק")))return;
+    const del=el("button",null,"🗑",async()=>{if(!await askConfirm(T_("למחוק את השיר \"{t}\"?",{t:r.title||T_("השיר שלי")}),T_("🗑 למחוק")))return;
       await sb.from("items").delete().eq("id",r.id);if(r.audio_path)await sb.storage.from("audio").remove([r.audio_path]);
-      if(cur){proj.id=null}refreshProjects();toast(T_("הפרויקט נמחק מהענן"))});
+      if(cur)resetProject();refreshProjects();toast(T_("השיר נמחק"))});
     del.setAttribute("aria-label",T_("מחיקה"));d.append(del);L.append(d);
   }
 }
@@ -3533,6 +3548,8 @@ function route(){
   for(const id of VIEWS)$(id).hidden=id!==v;
   if(was==="studio"&&v!=="studio"){vStop();mixStop()}
   document.body.classList.toggle("inproj",v==="studio");
+  const TT={home:"דף הבית",have:"🎤 יש לי שיר או מנגינה",nv:"🎹 בואו נכין מוזיקה",songs:"📂 השירים שלי",settings:"⚙️ הגדרות",quick:"✨ יצירה מהירה"};
+  const PT={voice:"🎤 ההקלטה",song:"✍️ השיר",style:"🎸 סגנון ולחן",mix:"🎛️ המיקס"};
   if(v==="studio"){
     ptab=sub&&$("pt-"+sub)?sub:firstTab();if(ptab==="voice"&&proj.noVoice)ptab="song";
     for(const t of ["voice","song","style","mix"])$("pt-"+t).hidden=t!==ptab;
@@ -3541,6 +3558,7 @@ function route(){
     if(ptab==="mix")requestAnimationFrame(drawRoll);
     if(ptab==="song")fillSongText();
   }
+  $("pageT").textContent=T_(v==="studio"?PT[ptab]:TT[v]);
   if(v==="home")renderHome();
   if(v==="songs")renderSongs();
   if(v==="settings")renderSettings();
@@ -3578,10 +3596,18 @@ function renderHome(){
 function renderSongs(){
   const L=$("localSong");L.replaceChildren();
   if(proj.mono&&!(isMember()&&proj.id)){const d=el("div","refitem");
-    d.append(el("span",null,"🎵 "+projTitle()+" · "+T_("פתוח במכשיר")),el("button",null,"▶",()=>go("studio")));L.append(d)}
+    const nm=el("span",null,"🎵 "+projTitle()+" · "+T_("פתוח עכשיו"));nm.style.fontWeight="700";
+    d.append(nm,el("button",null,"▶",()=>go("studio")),el("button",null,"🗑",async()=>{if(!await askConfirm(T_("למחוק את השיר \"{t}\"?",{t:projTitle()}),T_("🗑 למחוק")))return;resetProject();renderSongs();toast(T_("השיר נמחק"))}));L.append(d)}
   if(isMember()&&sb){renderProjects();refreshProjects()}
-  else{$("projList").replaceChildren();if(!proj.mono)$("projList").append(el("p","hint",T_("עוד אין שירים. מתחילים מדף הבית 🎶")));
-    if(!isMember())$("projList").append(el("p","hint",T_("כשמחוברים לחשבון, כל השירים נשמרים בענן ומופיעים כאן.")))}
+  else{$("projList").replaceChildren();if(!proj.mono)$("projList").append(el("p","hint",T_("עוד אין שירים. מתחילים מדף הבית 🎶")))}
+}
+
+// סוגרים את השיר הפתוח ומוחקים אותו מהמכשיר
+function resetProject(){
+  vStop();mixStop();arrInvalidate(true);
+  Object.assign(proj,{blob:null,buf:null,mono:null,dur:0,cuts:[],secs:[],title:"",refs:[],ref:null,id:null,noVoice:false,guide:false,genre:"",genreText:"",edits:[],chat:[],prefs:{}});
+  $("pTitle").value="";renderRefs();renderGenres();renderModeUI();$("chat").hidden=true;$("waveBox").hidden=true;$("secCard").hidden=true;$("modeCard").hidden=true;
+  songDirty=false;db.put("audio",null);saveProj();
 }
 
 // ---------- הגדרות ----------
