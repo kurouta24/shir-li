@@ -253,7 +253,7 @@ div.gh{border:0;cursor:default}
       <div class="refbox">
         <p class="hint" style="margin-top:0;font-weight:700;color:var(--ink)">🎧 שירי רפרנס (לא חובה)</p>
         <p class="hint">מעלים שיר שאוהבים, וה-AI לומד ממנו את האנרגיה, הצבע והכלים. השיר עצמו לא נשמר ולא מועתק.</p>
-        <button class="sbtn" id="refBtn" style="margin-top:8px">➕ הוספת שיר רפרנס</button>
+        <div class="tools"><button class="sbtn" id="refBtn">➕ הוספת שיר רפרנס</button><button class="sbtn" id="refLink">🔗 הדבקת קישור</button></div>
         <input type="file" id="refFile" accept="audio/*,video/*" hidden>
         <div id="refList"></div>
       </div>
@@ -823,6 +823,14 @@ Object.assign(EN,{
 "אין חיבור ל-AI כרגע. בדקי את האינטרנט ונסי שוב":"Can't reach the AI right now. Check your connection and try again",
 "בוצע ✓":"Done ✓","↺ ביטלתי {n} שינויים בטווח זמן":"↺ Removed {n} time-range changes","🎸 סגנון: {g}":"🎸 Style: {g}",
 "מילים ל{s}":"lyrics for {s}","🔄 בניתי מחדש את הכלים":"🔄 Rebuilt the instruments","אפקטים לקול ב{s}":"voice effects in {s}"
+});
+Object.assign(EN,{
+"🔗 הדבקת קישור":"🔗 Paste a link","🔗 שיר השראה מקישור":"🔗 Inspiration song from a link","הערכה של AI":"AI estimate","שיר מקישור":"Song from a link","קישור לשיר":"Song link",
+"קישורים עובדים כשמחוברים לחשבון באתר עצמו. בינתיים אפשר להעלות קובץ.":"Links work when you're signed in on the site itself. Meanwhile you can upload a file.",
+"מדביקים קישור לשיר מיוטיוב, ספוטיפיי, סאונדקלאוד או אתר אחר.":"Paste a link to a song on YouTube, Spotify, SoundCloud or another site.",
+"ביוטיוב ה-AI מאזין לשיר עצמו. בשאר האתרים הוא מעריך לפי שם השיר. בשני המקרים זו הערכה, ואפשר למחוק אם לא מדויק.":"On YouTube the AI listens to the song itself. On other sites it estimates from the song's name. Either way it's an estimate, and you can delete it if it's off.",
+"🎧 ללמוד מהשיר":"🎧 Learn from the song","⏳ מאזינה לשיר...":"⏳ Listening to the song...","זה לא נראה כמו קישור":"That doesn't look like a link",
+"לא הכרתי את השיר הזה. נסי קישור מיוטיוב, או להעלות קובץ":"I don't know this song. Try a YouTube link, or upload a file"
 });
 
 "use strict";
@@ -2465,7 +2473,8 @@ function renderRefs(){
   const L=$("refList");L.replaceChildren();
   proj.refs.forEach((r,i)=>{const d=el("div","refitem");
     const words=[r.energy>.6?T_("אנרגטי"):r.energy<.3?T_("רגוע"):T_("בינוני"),r.bright>.55?T_("בהיר ואלקטרוני"):r.bright<.35?T_("חם ואקוסטי"):""].filter(Boolean).join(", ");
-    d.append(el("span",null,`🎧 ${r.name} · ${r.bpm} BPM · ${T_(NOTE_HE[r.key.root])} ${T_(r.key.minor?"מינור":"מז'ור")} · ${words}`),
+    const st=r.style&&GENRES[r.style]?" · "+T_(GENRES[r.style].name):"";
+    d.append(el("span",null,`${r.url?"🔗":"🎧"} ${r.name} · ${r.bpm} BPM · ${T_(NOTE_HE[r.key.root])} ${T_(r.key.minor?"מינור":"מז'ור")} · ${words}${st}${r.url?" · "+T_("הערכה של AI"):""}`),
       el("button",null,"✕",()=>{proj.refs.splice(i,1);proj.ref=refProfile();renderRefs();saveProj();markDirty();refsChanged()}));L.append(d)});
   if(proj.ref){const p=proj.ref;const ins=TRACK_INSTS;
     L.append(el("p","hint",T_("ישפיע על: תופים {d}, אקורדים {c}, בס {b}",{d:T_(ins.drums[p.insts.drums]),c:T_(ins.chords[p.insts.chords]),b:T_(ins.bass[p.insts.bass])})+(p.extra.length?" · "+T_("יתווספו")+" "+p.extra.map(k=>T_(EXTRA_DEFS[k].name)).join(", "):"")))}
@@ -2662,8 +2671,8 @@ function openComposer(){
     const gt=el("input","txt");gt.dir="auto";gt.maxLength=80;gt.value=NV.text;gt.placeholder=T_("או תארו סגנון במילים, למשל: טראפ אפל, רוק של שנות ה-90");
     gt.onchange=()=>{NV.text=gt.value.trim();const g=genreFromText(NV.text);if(g){NV.genre=g;openComposer()}};B.append(gt);
     B.append(label("🎧 שירי השראה (לא חובה): מהם לומדים קצב, סולם ואנרגיה. השירים עצמם לא נשמרים."));
-    for(const [i,rf] of (proj.refs||[]).entries()){const d=el("div","refitem");d.append(el("span",null,`🎧 ${rf.name} · ${rf.bpm} BPM`),el("button",null,"✕",()=>{proj.refs.splice(i,1);proj.ref=refProfile();renderRefs();openComposer()}));B.append(d)}
-    if((proj.refs||[]).length<3)B.append(el("button","sbtn",T_("➕ הוספת שיר השראה"),()=>$("refFile").click()));
+    for(const [i,rf] of (proj.refs||[]).entries()){const d=el("div","refitem");d.append(el("span",null,`${rf.url?"🔗":"🎧"} ${rf.name} · ${rf.bpm} BPM`),el("button",null,"✕",()=>{proj.refs.splice(i,1);proj.ref=refProfile();renderRefs();openComposer()}));B.append(d)}
+    if((proj.refs||[]).length<3){const rr=el("div","tools");rr.append(el("button","sbtn",T_("➕ הוספת שיר השראה"),()=>$("refFile").click()),el("button","sbtn",T_("🔗 הדבקת קישור"),()=>openLinkSheet()));B.append(rr)}
     B.append(label("אורך:"));
     const lc=el("div","chips");
     for(const s of [60,120,180]){const b=el("button","chip",fmt(s),()=>{NV.len=s;openComposer()});b.setAttribute("aria-pressed",NV.len===s);lc.append(b)}
@@ -3096,6 +3105,67 @@ $("chatIn").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.pre
 // כפתור הצ'אט מופיע כשיש פרויקט פתוח באולפן
 setInterval(()=>{$("chatFab").hidden=!(proj.mono&&!$("studio").hidden&&$("chat").hidden&&$("gate").hidden)},700);
 window.chat={chatAsk,runTool,chatTools,chatSystem,histContents}; // לבדיקות
+
+// ---------- שיר השראה מקישור: יוטיוב (ה-AI מאזין לסרטון), ספוטיפיי, סאונדקלאוד ועוד (לפי שם השיר) ----------
+function linkInfo(u){
+  let m=u.match(/(?:youtube\.com\/(?:watch\?(?:.*&)?v=|shorts\/|live\/|embed\/)|youtu\.be\/)([\w-]{11})/);
+  if(m)return {kind:"youtube",url:"https://www.youtube.com/watch?v="+m[1],oembed:"https://www.youtube.com/oembed?format=json&url="};
+  if(/open\.spotify\.com\//.test(u))return {kind:"spotify",url:u,oembed:"https://open.spotify.com/oembed?url="};
+  if(/soundcloud\.com\//.test(u))return {kind:"soundcloud",url:u,oembed:"https://soundcloud.com/oembed?format=json&url="};
+  return {kind:"other",url:u};
+}
+function parseKey(s){
+  const m=String(s||"").match(/([A-G])\s*([#♯b♭]?)\s*(major|minor|maj|min|m)?/i);if(!m)return null;
+  let r={C:0,D:2,E:4,F:5,G:7,A:9,B:11}[m[1].toUpperCase()];if(/[#♯]/.test(m[2]))r++;if(/[b♭]/.test(m[2]))r--;
+  return {root:(r+12)%12,minor:/^m(in)?(or)?$/i.test(m[3]||"")||/minor|hijaz|phrygian/i.test(s)};
+}
+async function analyzeLink(raw){
+  const li=linkInfo(raw.trim());let title="";
+  if(li.oembed)try{const j=await (await fetch(li.oembed+encodeURIComponent(li.url))).json();title=[j.title,j.author_name].filter(Boolean).join(" · ")}catch(e){}
+  const ask=heard=>`You are a music analyst. Song link: ${li.url}${title?`\nTitle from the page: ${title}`:""}
+${heard?"Listen to the audio of this video and estimate from what you hear.":"You cannot hear it: use what you know about this song."}
+Estimate its tempo (BPM), key (like "A minor"), energy 0-1 (0 calm, 1 very energetic), brightness 0-1 (0 warm/acoustic, 1 bright/electronic) and style (one of: pop, rock, rap, mizrahi, other).
+Reply with ONLY this JSON, nothing else: {"name":"<artist - title, short>","bpm":0,"key":"","energy":0,"bright":0,"style":"","sure":true}
+Set "sure" to false if you could not hear it and do not know this song.`;
+  const call=async heard=>{
+    const parts=heard?[{fileData:{fileUri:li.url},videoMetadata:{startOffset:"15s",endOffset:"75s"}},{text:ask(true)}]:[{text:ask(false)}];
+    const {data,error}=await sb.functions.invoke(CHAT_FN,{body:{system:"You analyse songs and answer only with JSON.",contents:[{role:"user",parts}]}});
+    if(error){let code=0;try{code=error.context.status}catch(e){}const er=new Error("ai");er.code=code;throw er}
+    const txt=((data&&data.candidates&&data.candidates[0].content&&data.candidates[0].content.parts)||[]).filter(p=>p.text&&!p.thought).map(p=>p.text).join("");
+    return JSON.parse((txt.match(/\{[\s\S]*\}/)||["{}"])[0]);
+  };
+  let j=null;
+  if(li.kind==="youtube"){try{j=await call(true)}catch(e){if(e.code===429)throw e}} // סרטון פרטי או חסום: לפי השם בלבד
+  if(!j||!j.bpm)j=await call(false);
+  const key=parseKey(j.key);
+  if(!j.bpm||!key||(j.sure===false&&li.kind!=="youtube")){const e=new Error("unknown");e.code="unknown";throw e}
+  const cl=(v,a,b)=>Math.max(a,Math.min(b,+v||0));
+  return {name:String(j.name||title||"").slice(0,40)||T_("שיר מקישור"),bpm:Math.round(cl(j.bpm,60,200)),key,energy:+cl(j.energy,0,1).toFixed(2),bright:+cl(j.bright,0,1).toFixed(2),
+    style:GENRES[j.style]?j.style:"",url:li.url};
+}
+function openLinkSheet(){
+  const back=nvOpen;nvOpen=false;
+  if((proj.refs||[]).length>=3){toast(T_("אפשר עד 3 שירי רפרנס"));return}
+  openSheet(T_("🔗 שיר השראה מקישור"),B=>{
+    if(!chatOn()){B.append(label("קישורים עובדים כשמחוברים לחשבון באתר עצמו. בינתיים אפשר להעלות קובץ."));return}
+    B.append(label("מדביקים קישור לשיר מיוטיוב, ספוטיפיי, סאונדקלאוד או אתר אחר."));
+    const inp=el("input","txt");inp.type="url";inp.dir="ltr";inp.placeholder="https://www.youtube.com/watch?v=...";inp.setAttribute("aria-label",T_("קישור לשיר"));B.append(inp);
+    B.append(el("p","hint",T_("ביוטיוב ה-AI מאזין לשיר עצמו. בשאר האתרים הוא מעריך לפי שם השיר. בשני המקרים זו הערכה, ואפשר למחוק אם לא מדויק.")));
+    const go=el("button","go",T_("🎧 ללמוד מהשיר"),async()=>{
+      const u=inp.value.trim();if(!/^https?:\/\/\S+\.\S+/.test(u)){toast(T_("זה לא נראה כמו קישור"));inp.focus();return}
+      go.disabled=true;go.textContent=T_("⏳ מאזינה לשיר...");
+      try{const r=await analyzeLink(u);proj.refs.push(r);proj.ref=refProfile();renderRefs();saveProj();markDirty();
+        if(back&&r.style)NV.genre=r.style;
+        toast(T_("למדתי מ\"{n}\" 🎧 ההשפעה תיכנס כשתבני את הכלים",{n:r.name}),4500);
+        if(back)openComposer();else closeSheet()}
+      catch(e){console.warn("link",e);go.disabled=false;go.textContent=T_("🎧 ללמוד מהשיר");
+        toast(e.code==="unknown"?T_("לא הכרתי את השיר הזה. נסי קישור מיוטיוב, או להעלות קובץ"):e.code===429?T_("הגעתי למכסה החינמית של ה-AI להיום או לדקה הזו. נסי שוב בעוד כמה דקות 🙏"):T_("אין חיבור ל-AI כרגע. בדקי את האינטרנט ונסי שוב"),5000)}
+    });
+    B.append(go);setTimeout(()=>inp.focus(),80);
+  });
+}
+$("refLink").onclick=()=>openLinkSheet();
+Object.assign(window.chat,{analyzeLink,parseKey,linkInfo});
 
 
 </script>
