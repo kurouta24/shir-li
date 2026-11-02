@@ -26,7 +26,7 @@ body{
     radial-gradient(circle at 100% 20%,#c9b6ff 0,transparent 45%),
     radial-gradient(circle at 30% 100%,#b6e6ff 0,transparent 50%);
   background-attachment:fixed;
-  padding-block:0 calc(24px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:0 calc(90px + env(safe-area-inset-bottom,0px));padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
 }
 .wrap{max-width:560px;margin:0 auto}
 header{display:flex;align-items:center;gap:10px;padding:20px 0 12px}
@@ -71,7 +71,7 @@ input[type=range]{flex:1;accent-color:var(--pink)}
 .pbtn.main{background:var(--grad);width:56px;height:56px;border-radius:50%;font-size:22px;padding:0}
 .pbtn:disabled{opacity:.5}
 .close{position:absolute;top:calc(10px + env(safe-area-inset-top));left:12px;z-index:2;border:0;background:#ffffff33;color:#fff;width:40px;height:40px;border-radius:50%;font-size:20px;cursor:pointer}
-#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(120px);background:#2a1052;color:#fff;padding:12px 18px;border-radius:16px;font-size:15px;z-index:20;transition:transform .3s;max-width:90vw;text-align:center;box-shadow:0 8px 24px #0005}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(120px);background:#2a1052;color:#fff;padding:12px 18px;border-radius:16px;font-size:15px;z-index:45;transition:transform .3s;max-width:90vw;text-align:center;box-shadow:0 8px 24px #0005}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #sheet{position:fixed;inset:0;background:#0007;display:none;align-items:flex-end;justify-content:center;z-index:30}
 #sheet.open{display:flex}
@@ -161,6 +161,27 @@ div.gh{border:0;cursor:default}
 #gCodeIn{text-align:center;font-size:20px;letter-spacing:2px;text-transform:uppercase}
 .acct{width:40px;height:40px;border-radius:50%;border:0;background:var(--grad);color:#fff;font:inherit;font-weight:800;font-size:17px;cursor:pointer;flex:none}
 .sync{font-size:12px;color:var(--muted);margin:6px 2px 0}
+/* צ'אט */
+.fab{position:fixed;inset-inline-end:max(16px,env(safe-area-inset-right,0px));bottom:calc(18px + env(safe-area-inset-bottom,0px));width:58px;height:58px;border-radius:50%;border:0;background:var(--grad);color:#fff;font-size:26px;box-shadow:0 8px 22px #8b5cf666;z-index:15;cursor:pointer}
+.chat{position:fixed;inset:0;background:#0007;display:flex;align-items:flex-end;justify-content:center;z-index:24}
+.chat .cbox{background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:560px;height:min(86vh,760px);display:flex;flex-direction:column;padding:14px 14px calc(12px + env(safe-area-inset-bottom,0px))}
+.chat .ph{display:flex;align-items:center;gap:8px}
+.chat .ph b{flex:1;font-size:17px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat .ph button{border:0;background:#f3e8ff;width:36px;height:36px;border-radius:50%;font-size:16px;cursor:pointer}
+.clog{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:8px 2px;min-height:0}
+.msg{max-width:86%;padding:10px 12px;border-radius:16px;font-size:15px;line-height:1.55;overflow-wrap:anywhere}
+.msg.u{align-self:flex-end;background:var(--grad);color:#fff}
+.msg.m{align-self:flex-start;background:#f3e8ff;color:var(--ink)}
+.msg .acts{font-size:13px;margin-top:6px;color:var(--purple);font-weight:600}
+.msg.typing{opacity:.75}
+#chatSug{margin:4px 0}
+.cin{display:flex;gap:8px;align-items:flex-end;margin-top:6px}
+.cin textarea{min-height:48px;height:48px;max-height:140px;flex:1;resize:none;padding:11px 14px}
+.cin button{width:48px;height:48px;border-radius:50%;border:0;background:var(--grad);color:#fff;font-size:20px;cursor:pointer;flex:none}
+[dir=rtl] .cin button{transform:scaleX(-1)}
+.cin button:disabled{opacity:.5}
+.tin{width:6.5em;text-align:center}
+.nvbtn{margin-top:12px}
 .langbtn{margin-inline-start:auto;border:2px solid #e9d8ff;background:#fff;border-radius:999px;padding:6px 12px;font:inherit;font-size:14px;font-weight:700;color:var(--ink);cursor:pointer}
 </style>
 </head>
@@ -195,6 +216,8 @@ div.gh{border:0;cursor:default}
       <input type="file" id="upFile" accept="audio/*,video/*" hidden>
       <div class="meter" id="meter" hidden><div></div></div>
       <p class="hint" id="recHint">אפשר לשיר עם מילים או בלי, ואפשר גם רק לזמזם את המנגינה. עד 5 דקות.</p>
+      <button class="go sec2 nvbtn" id="nvBtn">🎹 אין לך עדיין שירה? אכין לך מוזיקה</button>
+      <p class="hint" id="nvInfo" hidden></p>
       <div id="waveBox" hidden>
         <canvas class="wave" id="wave"></canvas>
         <div class="tools">
@@ -214,13 +237,18 @@ div.gh{border:0;cursor:default}
 
     <section class="card" id="modeCard" hidden>
       <div class="step"><i>3</i>הלחן</div>
-      <div class="mode">
+      <div class="mode" id="modeBox">
         <label><input type="radio" name="mode" value="mine" checked><span><b>🎵 זמזמתי את הלחן</b><small>זמזמתי או שרתי את המנגינה בפה. האתר יזהה את התווים וינגן אותם בכלי שאבחר, וה-AI יוסיף ליווי סביבם.</small></span></label>
         <label><input type="radio" name="mode" value="ai"><span><b>🤖 שה-AI ילחין</b><small>ה-AI ימציא מנגינה וליווי מתאימים לשירה שלי.</small></span></label>
       </div>
       <div id="instBox">
         <p class="hint" style="margin-top:12px;font-weight:700;color:var(--ink)">באיזה כלי לנגן את המנגינה שזמזמתי?</p>
         <div class="chips" id="insts" role="group" aria-label="כלי נגינה"></div>
+      </div>
+      <div class="refbox">
+        <p class="hint" style="margin-top:0;font-weight:700;color:var(--ink)">🎸 סגנון</p>
+        <div class="chips" id="genres" role="group" aria-label="סגנון"></div>
+        <input dir="auto" class="txt" id="genreTxt" maxlength="80" placeholder="או תארו סגנון במילים, למשל: טראפ אפל, רוק של שנות ה-90" aria-label="תיאור הסגנון">
       </div>
       <div class="refbox">
         <p class="hint" style="margin-top:0;font-weight:700;color:var(--ink)">🎧 שירי רפרנס (לא חובה)</p>
@@ -245,6 +273,8 @@ div.gh{border:0;cursor:default}
         <span class="clock" id="mClock">0:00</span>
       </div>
       <div class="gridwrap"><div class="grid" id="grid"></div></div>
+      <div class="tools"><button class="sbtn" id="rangeBtn">⏱️ שינוי בטווח זמן</button><span class="hint" style="margin:0">להנמיך את המוזיקה או להוריד כלים מדקה X עד דקה Y</span></div>
+      <div id="editList"></div>
       <p class="learned" id="learned" hidden></p>
       <p class="hint">לחיצה על משבצת פותחת עריכה: הדלקה וכיבוי, 👍 או 👎, סגנון נגינה, ובשורה של הקול גם אוטו-טיון ואפקטים. לחיצה על שם של כלי מאפשרת להחליף אותו, לשנות עוצמה או להשתיק. לחיצה על שם של קטע מנגנת מתחילתו.</p>
       <button class="go sec2" id="addTrack">➕ הוספת כלי</button>
@@ -316,6 +346,14 @@ div.gh{border:0;cursor:default}
     <button class="sbtn" id="gOut">התחברות עם חשבון אחר</button>
   </div>
   <button class="langbtn" id="gLang" style="margin:0">English</button>
+</div></div>
+
+<button class="fab" id="chatFab" hidden aria-label="צ'אט על השיר">💬</button>
+<div id="chat" class="chat" hidden><div class="cbox" role="dialog" aria-modal="true">
+  <div class="ph"><b id="chatTitle">💬</b><button id="chatX" aria-label="סגירה">✕</button></div>
+  <div class="clog" id="chatLog" aria-live="polite"></div>
+  <div class="chips" id="chatSug"></div>
+  <form class="cin" id="chatForm"><textarea dir="auto" id="chatIn" maxlength="1500" placeholder="מה תרצי לשאול או לשנות?" aria-label="הודעה"></textarea><button id="chatSend" aria-label="שליחה">➤</button></form>
 </div></div>
 
 <div id="toast"></div>
@@ -747,6 +785,44 @@ Object.assign(EN,{
 "הפרויקט הנוכחי יימחק מהמכשיר. להמשיך?":"The current project will be removed from this device. Continue?","פרויקט חדש: הקליטי או העלי שירה 🎤":"New project: record or upload some singing 🎤","🗑 למחוק":"🗑 Delete","רגע לפני":"Just checking","כן, להמשיך":"Yes, continue","ביטול":"Cancel",
 "יורד כקובץ ZIP שבתוכו ה-MP3":"downloads as a ZIP with the MP3 inside","אי אפשר להוריד קבצים בתצוגה הזו":"Downloads aren't available in this view","ההורדה לא הצליחה. נסי שוב":"The download didn't work. Please try again",
 "בגרסה הזו אי אפשר להקליט ישירות. הקליטי באפליקציית ההקלטות של הטלפון והעלי את הקובץ 📁":"Direct recording isn't available in this version. Record with your phone's recorder app and upload the file 📁","{v} ב{s}":"{v} in the {s}","לא הצלחתי להכין את האנימציה":"Couldn't prepare the animation"
+});
+// ---------- סגנונות, מוזיקה בלי שירה, טווח זמן וצ'אט ----------
+Object.assign(EN,{
+"🎤 פופ":"🎤 Pop","🤘 רוק":"🤘 Rock","🎧 ראפ / טראפ":"🎧 Rap / Trap","🪘 מזרחי / ים-תיכוני":"🪘 Mizrahi / Mediterranean","✨ אוטומטי":"✨ Auto",
+"🤘 גיטרה חשמלית":"🤘 Electric guitar","💥 בס 808":"💥 808 bass","🪘 דרבוקה":"🪘 Darbuka","🪕 עוד":"🪕 Oud","🔔 פעמונים":"🔔 Bells","חיג'אז":"Hijaz",
+"🎸 סגנון":"🎸 Style","סגנון":"Style","תיאור הסגנון":"Style description",
+"או תארו סגנון במילים, למשל: טראפ אפל, רוק של שנות ה-90":"Or describe a style in words, e.g. dark trap, 90s rock",
+"לא זיהיתי סגנון מהתיאור. אפשר לבחור סגנון למעלה, או לבקש מהצ'אט 💬":"I couldn't match that to a style. Pick one above, or ask the chat 💬",
+"סגנון: {g}. לחצי \"לבנות\" כדי לשמוע":"Style: {g}. Press \"Build\" to hear it",
+"🎹 אין לך עדיין שירה? אכין לך מוזיקה":"🎹 No vocals yet? I'll make you music",
+"🎹 מוזיקה בלי שירה ({d}). אפשר להוריד MP3 ולשיר עליה, או לבקש מהצ'אט מילים 💬":"🎹 Music without vocals ({d}). Download the MP3 and sing over it, or ask the chat for lyrics 💬",
+"🎹 מוזיקה בלי שירה":"🎹 Music without vocals","מה תרצו שאכין? אפשר לבחור כמה:":"What should I make? Pick one or more:",
+"🥁 ביט ומוזיקה לשיר עליה":"🥁 A beat / music to sing over","🎵 קו מנגינה מנחה":"🎵 A guide melody","✍️ הצעות למילים":"✍️ Lyric ideas",
+"באיזה סגנון?":"Which style?","🎧 שירי השראה (לא חובה): מהם לומדים קצב, סולם ואנרגיה. השירים עצמם לא נשמרים.":"🎧 Inspiration songs (optional): I learn tempo, key and energy from them. The songs themselves aren't saved.",
+"➕ הוספת שיר השראה":"➕ Add an inspiration song","אורך:":"Length:","על מה השיר? (בשביל המילים)":"What's the song about? (for the lyrics)",
+"למשל: על חברות שלא נגמרת":"e.g. a friendship that never ends","✨ ליצור":"✨ Create","⏳ מלחינה...":"⏳ Composing...",
+"תכתבי לי הצעה למילים לכל הקטעים של השיר{t}, שיתאימו למקצב ולמבנה, ותכניסי אותן לקטעים":"Write me lyric ideas for every section of the song{t} that fit the rhythm and structure, and put them into the sections",
+"על":"about","סגנון {g} · סולם {k} · קצב {b} BPM":"Style {g} · key {k} · tempo {b} BPM",
+"⏱️ שינוי בטווח זמן":"⏱️ Change a time range","להנמיך את המוזיקה או להוריד כלים מדקה X עד דקה Y":"Lower the music or drop instruments from minute X to minute Y",
+"מאיזה רגע עד איזה רגע? (דקות:שניות)":"From when to when? (minutes:seconds)","מ-":"from","עד":"to",
+"📍 התחלה = איפה שהנגן עומד":"📍 Start = playhead","📍 סוף = איפה שהנגן עומד":"📍 End = playhead","או לבחור קטע שלם:":"Or pick a whole section:",
+"מה לעשות בטווח הזה?":"What should happen in this range?","🔉 להנמיך את המוזיקה (מקום לשירה)":"🔉 Lower the music (room for vocals)","🔇 להוריד כלים":"🔇 Drop instruments",
+"קצת":"a little","בינונית":"medium","הרבה":"a lot","✓ להחיל":"✓ Apply","הסוף צריך להיות אחרי ההתחלה":"The end must be after the start",
+"בחרי לפחות כלי אחד":"Pick at least one instrument","בוצע ✓ {t}":"Done ✓ {t}","הנמכת המוזיקה":"music lowered","בלי":"without",
+"צ'אט על השיר":"Chat about the song","מה תרצי לשאול או לשנות?":"What would you like to ask or change?","הודעה":"Message","שליחה":"Send",
+"אפשר לשאול אותי כל דבר על השיר הזה, לבקש מילים, או לבקש שינויים. למשל: \"תנמיכי את המוזיקה מדקה 1:00 עד 1:30\" 🎶":"Ask me anything about this song, ask for lyrics, or ask for changes. For example: \"lower the music from 1:00 to 1:30\" 🎶",
+"הצ'אט עובד כשמחוברים לחשבון באתר עצמו (kurouta24.github.io/shir-li)":"The chat works when you're signed in on the site itself (kurouta24.github.io/shir-li)",
+"חושבת...":"Thinking...","בונה את הכלים מחדש...":"Rebuilding the instruments...",
+"💡 מה אפשר לשפר בשיר?":"💡 What could make this song better?","✍️ תכתבי לי מילים לפזמון":"✍️ Write me lyrics for the chorus",
+"🔉 תשאירי מקום לשירה בבית הראשון":"🔉 Leave room for vocals in the first verse","🥁 תורידי את התופים בפתיח":"🥁 Drop the drums in the intro",
+"✍️ תעזרי לי עם מילים לבית":"✍️ Help me with lyrics for the verse","🔉 תנמיכי קצת את המוזיקה בפזמון":"🔉 Lower the music a bit in the chorus",
+"לא הצלחתי לענות על זה. נסי לנסח אחרת":"I couldn't answer that. Try rephrasing",
+"הגעתי למכסה החינמית של ה-AI להיום או לדקה הזו. נסי שוב בעוד כמה דקות 🙏":"I've hit the free AI limit for now. Try again in a few minutes 🙏",
+"הצ'אט עוד לא הופעל בשרת. צריך להשלים את ההגדרה ב-Supabase":"The chat isn't switched on on the server yet. The Supabase setup needs finishing",
+"הצ'אט פתוח רק למי שנכנס עם קוד הזמנה":"The chat is only for people who joined with an invite code",
+"אין חיבור ל-AI כרגע. בדקי את האינטרנט ונסי שוב":"Can't reach the AI right now. Check your connection and try again",
+"בוצע ✓":"Done ✓","↺ ביטלתי {n} שינויים בטווח זמן":"↺ Removed {n} time-range changes","🎸 סגנון: {g}":"🎸 Style: {g}",
+"מילים ל{s}":"lyrics for {s}","🔄 בניתי מחדש את הכלים":"🔄 Rebuilt the instruments","אפקטים לקול ב{s}":"voice effects in {s}"
 });
 
 "use strict";
@@ -1372,9 +1448,11 @@ const db={
   async get(k){try{const d=await this.open();return await new Promise((res,rej)=>{const r=d.transaction("kv").objectStore("kv").get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}catch(e){return null}}
 };
 let saveT=0;
+const projMeta=()=>({cuts:proj.cuts,secs:proj.secs,mode:proj.mode,inst:proj.inst,det:proj.det,arr:proj.arr,title:proj.title||"",refs:proj.refs||[],id:proj.id||null,
+  noVoice:!!proj.noVoice,guide:!!proj.guide,dur:proj.dur,genre:proj.genre||"",genreText:proj.genreText||"",edits:proj.edits||[],chat:(proj.chat||[]).slice(-40)});
 function saveProj(withAudio){
   if(withAudio&&proj.blob)db.put("audio",proj.blob); // ההקלטה נשמרת מיד, והשאר מקובץ לשמירה אחת
-  clearTimeout(saveT);saveT=setTimeout(()=>db.put("meta",{cuts:proj.cuts,secs:proj.secs,mode:proj.mode,inst:proj.inst,det:proj.det,arr:proj.arr,title:proj.title||"",refs:proj.refs||[],id:proj.id||null}),400);
+  clearTimeout(saveT);saveT=setTimeout(()=>db.put("meta",projMeta()),400);
 }
 
 // ---------- טעינת אודיו ----------
@@ -1392,12 +1470,12 @@ async function loadAudio(blob,fresh){
   const n=buf.length,mono=new Float32Array(n);
   for(let c=0;c<buf.numberOfChannels;c++){const d=buf.getChannelData(c);for(let i=0;i<n;i++)mono[i]+=d[i]/buf.numberOfChannels}
   const b1=ac().createBuffer(1,n,buf.sampleRate);b1.copyToChannel(mono,0);
-  Object.assign(proj,{blob,buf:b1,mono,sr:buf.sampleRate,dur:buf.duration});
+  Object.assign(proj,{blob,buf:b1,mono,sr:buf.sampleRate,dur:buf.duration,noVoice:false});
   peaksCache=null;vPos=0;
-  if(fresh){proj.id=null;arrInvalidate(true);autoSplit(true);saveProj(true)} // הקלטה חדשה = פרויקט חדש בענן
+  if(fresh){Object.assign(proj,{id:null,guide:false,edits:[],chat:[],genre:"",genreText:""});renderGenres();renderEdits();arrInvalidate(true);autoSplit(true);saveProj(true)} // הקלטה חדשה = פרויקט חדש בענן
   else{proj.cuts=[];proj.secs=[{name:"בית",note:""}]} // זמני, עד שהקטעים השמורים נטענים
   $("waveBox").hidden=false;$("secCard").hidden=false;$("modeCard").hidden=false;$("toArrange").disabled=false;
-  renderSecs();drawWave();
+  renderSecs();drawWave();renderModeUI();
   return true;
 }
 
@@ -1555,16 +1633,16 @@ function renderInsts(){
   const box=$("insts");box.replaceChildren();
   for(const [k,label] of Object.entries(INSTS)){const b=document.createElement("button");b.type="button";b.className="chip";b.textContent=T_(label);b.setAttribute("aria-pressed",k===proj.inst);
     b.onclick=()=>{proj.inst=k;renderInsts();saveProj();markDirty()};box.append(b)}
-  $("instBox").hidden=proj.mode!=="mine";
+  $("instBox").hidden=proj.mode!=="mine"||!!proj.noVoice;
 }
 document.querySelectorAll('input[name=mode]').forEach(r=>r.onchange=()=>{proj.mode=r.value;renderInsts();saveProj();markDirty()});
 renderInsts();
 
 // ---------- טעינת פרויקט שמור ----------
 (async()=>{
-  const blob=await db.get("audio");if(!blob)return;
-  const meta=await db.get("meta");
-  if(!await loadAudio(blob,false))return;
+  const blob=await db.get("audio"),meta=await db.get("meta");
+  if(meta&&meta.noVoice){if(!loadSilent(meta.dur))return}
+  else if(!blob||!await loadAudio(blob,false))return;
   if(meta&&meta.cuts&&meta.secs&&meta.secs.length===meta.cuts.length+1&&meta.cuts.every(c=>c<proj.dur)){proj.cuts=meta.cuts;proj.secs=meta.secs}
   else autoSplit(true);
   if(meta&&meta.mode){proj.mode=meta.mode;const r=document.querySelector(`input[name=mode][value=${meta.mode}]`);if(r)r.checked=true}
@@ -1573,6 +1651,7 @@ renderInsts();
   if(meta&&meta.id)proj.id=meta.id;
   if(meta&&meta.title){proj.title=meta.title;$("pTitle").value=meta.title}
   if(meta&&meta.refs&&meta.refs.length){proj.refs=meta.refs;proj.ref=refProfile();renderRefs()}
+  if(meta)restoreMeta(meta);
   if(meta&&meta.det){proj.det=meta.det;proj.arr=meta.arr||null;runBuild()}
 })();
 window.studio={proj,loadAudio,autoSplit,ranges}; // לבדיקות
@@ -1647,6 +1726,9 @@ function keyFromHist(h){
   best.all=all;return best;
 }
 function detectKey(notes){const h=new Array(12).fill(0);for(const n of notes)h[((n.m%12)+12)%12]+=n.d;return keyFromHist(h)}
+const HIJ=[0,1,4,5,7,8,10]; // חיג'אז: הסולם המזרחי
+const scaleOf=k=>k.mode==="hijaz"?HIJ:(k.minor?MIN:MAJ);
+const keyName=k=>T_(NOTE_HE[k.root])+" "+T_(k.mode==="hijaz"?"חיג'אז":k.minor?"מינור":"מז'ור");
 function snapToScale(notes,key){
   const sc=key.minor?MIN:MAJ;const inS=m=>sc.includes(((m-key.root)%12+12)%12);
   for(const n of notes){if(inS(n.m))continue;const dir=n.mf>n.m?1:-1;n.m=inS(n.m+dir)?n.m+dir:n.m-dir}
@@ -1667,26 +1749,26 @@ const detectTempo=notes=>tempoFromOnsets(notes.map(n=>({t:n.t,w:Math.min(1,n.d*2
 function barGrid(det,dur){
   const T=60/det.bpm;const w=[0,0,0,0];
   for(const n of det.notes){const k=Math.round((n.t-det.phase)/T);if(Math.abs(n.t-det.phase-k*T)<.07)w[((k%4)+4)%4]+=n.d}
-  const down=w.indexOf(Math.max(...w));const B=4*T;
+  const down=det.chords?0:w.indexOf(Math.max(...w));const B=4*T; // במוזיקה בלי שירה התיבות מתחילות בהתחלה
   let s=det.phase+down*T;while(s>0)s-=B;
   const bars=[];for(;s<dur;s+=B)bars.push(s);
   return {T,B,bars};
 }
 // אקורד לכל תיבה, לפי התווים שזומזמו בה (תכנות דינמי, כדי שהמעברים יישמעו טבעיים)
 function chooseChords(det,grid){
-  const sc=det.key.minor?MIN:MAJ;const root=det.key.root;
-  const prior=[.3,.08,.05,.2,.2,.15];
+  const sc=scaleOf(det.key);const root=det.key.root;const hij=det.key.mode==="hijaz";
+  const degs=hij?[0,1,3,6]:[0,1,2,3,4,5],prior=hij?[.4,.25,.2,.15]:[.3,.08,.05,.2,.2,.15],D=degs.length;
   const tones=deg=>[0,2,4].map(k=>(root+sc[(deg+k)%7])%12);
-  const E=grid.bars.map(b0=>{const e=prior.map(p=>Math.log(p));const b1=b0+grid.B;let tot=0;const sc6=[0,0,0,0,0,0];
+  const E=grid.bars.map(b0=>{const e=prior.map(p=>Math.log(p));const b1=b0+grid.B;let tot=0;const scd=new Array(D).fill(0);
     for(const n of det.notes){const ov=Math.min(b1,n.t+n.d)-Math.max(b0,n.t);if(ov<=0)continue;const pc=((n.m%12)+12)%12;tot+=ov;
-      for(let c=0;c<6;c++)sc6[c]+=tones(c).includes(pc)?ov*(pc===tones(c)[0]?1.3:1):-.4*ov}
-    if(tot>0)for(let c=0;c<6;c++)e[c]+=3*sc6[c]/tot;return e});
+      for(let c=0;c<D;c++){const tc=tones(degs[c]);scd[c]+=tc.includes(pc)?ov*(pc===tc[0]?1.3:1):-.4*ov}}
+    if(tot>0)for(let c=0;c<D;c++)e[c]+=3*scd[c]/tot;return e});
   const tr=(a,b)=>a===b?.15:(a===4&&b===0?.35:(a===3&&b===4?.2:0));
   const n=E.length;if(!n)return [];
   const V=[E[0].slice()],bk=[[]];
-  for(let i=1;i<n;i++){V[i]=[];bk[i]=[];for(let c=0;c<6;c++){let bs=-1e9,bj=0;for(let j=0;j<6;j++){const v=V[i-1][j]+tr(j,c);if(v>bs){bs=v;bj=j}}V[i][c]=bs+E[i][c];bk[i][c]=bj}}
+  for(let i=1;i<n;i++){V[i]=[];bk[i]=[];for(let c=0;c<D;c++){let bs=-1e9,bj=0;for(let j=0;j<D;j++){const v=V[i-1][j]+tr(degs[j],degs[c]);if(v>bs){bs=v;bj=j}}V[i][c]=bs+E[i][c];bk[i][c]=bj}}
   let c=V[n-1].indexOf(Math.max(...V[n-1]));const out=new Array(n);
-  for(let i=n-1;i>=0;i--){out[i]=c;c=bk[i][c]}
+  for(let i=n-1;i>=0;i--){out[i]=degs[c];c=bk[i][c]}
   return out;
 }
 
@@ -1706,6 +1788,8 @@ const INST_P={
 };
 function addTone(out,sr,t0,dur,midi,inst,vel){
   if(inst==="guitar")return addPluck(out,sr,t0,dur,midi,vel);
+  if(inst==="oud")return addPluck(out,sr,t0,Math.min(dur,1.2),midi,vel*1.15,.991,.15);
+  if(inst==="dist")return addDist(out,sr,t0,dur,midi,vel);
   const P=INST_P[inst]||INST_P.piano;
   if(!WT[inst])WT[inst]={hi:table(P.hi),lo:table(P.lo)};
   const {hi,lo}=WT[inst];const f=mtof(midi),start=Math.floor(t0*sr),len=Math.floor((dur+P.rel)*sr);
@@ -1724,10 +1808,11 @@ function addTone(out,sr,t0,dur,midi,inst,vel){
   }
 }
 // גיטרה: אלגוריתם קרפלוס-סטרונג (מיתר שמרטט)
-function addPluck(out,sr,t0,dur,midi,vel){
+function addPluck(out,sr,t0,dur,midi,vel,damp,soft){
+  damp=damp||.996;soft=soft==null?.5:soft; // עוד: מיתר בהיר יותר שדועך מהר
   const f=mtof(midi),N=Math.max(2,Math.round(sr/f)),buf=new Float32Array(N);
-  let prev=0;for(let i=0;i<N;i++){const r=Math.random()*2-1;prev=prev*.5+r*.5;buf[i]=prev}
-  const start=Math.floor(t0*sr),len=Math.floor(Math.min(dur+.08,3.5)*sr),damp=.996;
+  let prev=0;for(let i=0;i<N;i++){const r=Math.random()*2-1;prev=prev*soft+r*(1-soft);buf[i]=prev}
+  const start=Math.floor(t0*sr),len=Math.floor(Math.min(dur+.08,3.5)*sr);
   let idx=0;
   for(let i=0;i<len;i++){
     const o=start+i;if(o>=out.length)break;
@@ -1736,12 +1821,28 @@ function addPluck(out,sr,t0,dur,midi,vel){
     if(o>=0)out[o]+=v*env*vel;
   }
 }
+// גיטרה חשמלית מעוותת: מיתר שעובר דרך "דיסטורשן" ומסנן
+function addDist(out,sr,t0,dur,midi,vel){
+  const d=Math.min(dur,3),L=Math.floor((d+.1)*sr),tmp=new Float32Array(L);addPluck(tmp,sr,0,d,midi,1,.998);
+  const s=Math.floor(t0*sr);let lp=0;
+  for(let i=0;i<L;i++){const o=s+i;if(o>=out.length)break;const y=Math.tanh(tmp[i]*7);lp+=.22*(y-lp);if(o>=0)out[o]+=lp*vel}
+}
+// דרבוקה: "דום" עמוק ו"טק" חד
+let DK=null;
+function darbukaKit(sr){
+  if(DK&&DK.sr===sr)return DK;
+  const mk=(len,fn)=>{const n=Math.floor(len*sr),d=new Float32Array(n);fn(d,n);return d};
+  const tek=(f,a)=>mk(.08,(d,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=TAU*f/sr;d[i]=a*(Math.sin(ph)*.5+(Math.random()*2-1)*.7*Math.exp(-t/.004))*Math.exp(-t/.02)}});
+  DK={sr,dum:mk(.4,(d,n)=>{let ph=0;for(let i=0;i<n;i++){const t=i/sr;ph+=TAU*(92+45*Math.exp(-t/.02))/sr;d[i]=Math.sin(ph)*Math.exp(-t/.14)+(t<.004?(Math.random()*2-1)*.3:0)}}),tek:tek(2500,.9),ka:tek(1900,.45)};
+  return DK;
+}
 function addBass(out,sr,t0,dur,midi,vel,type){
   const f=mtof(midi),start=Math.floor(t0*sr),len=Math.floor((dur+.05)*sr);let ph=0;
   for(let i=0;i<len;i++){const o=start+i;if(o>=out.length)break;if(o<0)continue;const t=i/sr;
-    let env=Math.min(1,t/.008)*Math.exp(-t/(type==="deep"?2.5:1.2));if(t>dur)env*=Math.max(0,1-(t-dur)/.05);
-    let fr=f;if(type==="deep")fr*=1+.5*Math.exp(-t/.03);ph+=TAU*fr/sr;
+    let env=Math.min(1,t/.008)*Math.exp(-t/(type==="deep"?2.5:type==="b808"?3:1.2));if(t>dur)env*=Math.max(0,1-(t-dur)/.05);
+    let fr=f;if(type==="deep")fr*=1+.5*Math.exp(-t/.03);if(type==="b808")fr*=1+.35*Math.exp(-t/.04);ph+=TAU*fr/sr;
     let s;if(type==="synth"){const p=(ph/TAU)%1;s=Math.tanh(3*(p*2-1)*Math.exp(-t/.4))}
+    else if(type==="b808")s=Math.tanh(1.9*Math.sin(ph));
     else if(type==="deep")s=Math.tanh(1.2*Math.sin(ph));
     else s=Math.tanh(1.6*(Math.sin(ph)+.35*Math.sin(2*ph)));
     out[o]+=s*env*vel}
@@ -1762,7 +1863,7 @@ const EXTRA_DEFS={
   perc:{emoji:"🪇",name:"כלי הקשה",vol:.45,desc:"שייקר, טמבורין ומחיאות כפיים"},
   counter:{emoji:"🎵",name:"מנגינה נגדית",vol:.3,desc:"מנגינה שנייה שעונה למנגינה שלך"}
 };
-const allTracks=()=>BASE_TRACKS.concat(((proj.arr&&proj.arr.extra)||[]).filter(k=>EXTRA_DEFS[k]).map(k=>({id:k,...EXTRA_DEFS[k]})));
+const allTracks=()=>BASE_TRACKS.filter(t=>!(proj.noVoice&&t.id==="vocal")).concat(((proj.arr&&proj.arr.extra)||[]).filter(k=>EXTRA_DEFS[k]).map(k=>({id:k,...EXTRA_DEFS[k]})));
 const VARS={
   melody_mine:["כמו שזמזמתי","אוקטבה למעלה","קצר וקופצני","כפול (שתי אוקטבות)"],
   melody_ai:["לפי האנרגיה","רגוע","קצבי","ארפג'ו"],
@@ -1778,14 +1879,15 @@ const VARS={
 };
 const varsOf=k=>k==="melody"?(proj.mode==="mine"?VARS.melody_mine:VARS.melody_ai):(VARS[k]||["רגיל"]);
 const TRACK_INSTS={
-  chords:{auto:"✨ אוטומטי",keys:"🎹 פסנתר חשמלי",piano:"🎹 פסנתר",guitar:"🎸 גיטרה",synth:"🎛️ סינתי",pad:"☁️ פד"},
-  bass:{electric:"🎸 בס חשמלי",synth:"🎛️ סינתי בס",deep:"🔊 בס עמוק"},
-  drums:{acoustic:"🥁 אקוסטי",electro:"🎛️ אלקטרוני",soft:"🪶 רך"},
-  counter:{flute:"🪈 חליל",violin:"🎻 כינור",bell:"🔔 פעמונים",synth:"🎛️ סינתי"},
+  chords:{auto:"✨ אוטומטי",keys:"🎹 פסנתר חשמלי",piano:"🎹 פסנתר",guitar:"🎸 גיטרה",dist:"🤘 גיטרה חשמלית",synth:"🎛️ סינתי",pad:"☁️ פד"},
+  bass:{electric:"🎸 בס חשמלי",synth:"🎛️ סינתי בס",deep:"🔊 בס עמוק",b808:"💥 בס 808"},
+  drums:{acoustic:"🥁 אקוסטי",electro:"🎛️ אלקטרוני",soft:"🪶 רך",darbuka:"🪘 דרבוקה"},
+  counter:{flute:"🪈 חליל",violin:"🎻 כינור",bell:"🔔 פעמונים",oud:"🪕 עוד",synth:"🎛️ סינתי"},
   strings:{strings:"🎻 מיתרים",pad:"☁️ פד סינתי"}
 };
 const INST_RE={piano:/פסנתר|piano/,guitar:/גיטרה|guitar/,violin:/כינור|violin/,flute:/חליל|flute/,trumpet:/חצוצרה|trumpet/,synth:/סינתי|synth/};
-const INST_EMOJI={piano:"🎹",guitar:"🎸",violin:"🎻",flute:"🪈",trumpet:"🎺",synth:"🎛️",auto:"🎹"};
+const INST_EMOJI={piano:"🎹",guitar:"🎸",violin:"🎻",flute:"🪈",trumpet:"🎺",synth:"🎛️",oud:"🪕",dist:"🤘",bell:"🔔",auto:"🎹"};
+const G=()=>proj.genre||""; // הסגנון: pop, rock, rap, mizrahi או אוטומטי
 const instOf=k=>{const v=proj.arr&&proj.arr.insts&&proj.arr.insts[k];return v||Object.keys(TRACK_INSTS[k]||{x:0})[0]};
 
 // ---------- 6. אנרגיה והוראות לכל קטע ----------
@@ -1812,7 +1914,7 @@ function defaultCells(){
   const cells={},energy=[],wantExtra=new Set();
   proj.secs.forEach((s,i)=>{
     const p=parseNote(s.note);const e=Math.max(0,Math.min(2,(BASE_E[s.name]??1)+p.e+(proj.ref?proj.ref.eBoost:0)));energy.push(e);
-    const on={vocal:true,melody:true,chords:true,bass:e>=1,drums:e>=1,harmony:false,strings:e===0||e===2,arp:e>=1,perc:e===2,counter:e>=1};
+    const on={vocal:true,melody:!proj.noVoice||!!proj.guide,chords:true,bass:e>=1,drums:e>=1,harmony:false,strings:e===0||e===2,arp:e>=1,perc:e===2,counter:e>=1};
     if(p.only){for(const k in on)on[k]=k==="vocal"||p.only.includes(k)}
     Object.assign(on,p.on);
     for(const k in p.on)if(p.on[k]&&EXTRA_DEFS[k])wantExtra.add(k);
@@ -1838,7 +1940,7 @@ function learned(){
 let tracksBuf=null,RC=null; // RC: ההקשר המוזיקלי (תיבות, אקורדים, אנרגיה) של הבנייה האחרונה
 async function buildTracks(onP){
   const {mono,sr,dur}=proj;
-  if(!proj.det||!proj.det.f0){
+  if(!proj.det||(!proj.det.f0&&!proj.noVoice)){
     const P=await detectPitch(mono,sr,p=>onP&&onP("🎧 מקשיבה לזמזום...",p*.7));
     const {notes,off}=toNotes(P);
     const key=detectKey(notes);snapToScale(notes,key);
@@ -1846,18 +1948,22 @@ async function buildTracks(onP){
     proj.det={notes,off,key,bpm:tempo.bpm,phase:tempo.phase,f0:P.f0,hop:P.hop,lag:P.lag};
   }
   onP&&onP("🎼 בונה את הכלים...",.75);await sleep(0);
-  const det=proj.det;const grid=barGrid(det,dur);const chords=chooseChords(det,grid);
+  const det=proj.det;const grid=barGrid(det,dur);
+  const chords=det.chords&&det.chords.length?grid.bars.map((_,i)=>det.chords[Math.min(i,det.chords.length-1)]):chooseChords(det,grid);
   const {cells,energy,wantExtra}=defaultCells();
   // שומרים את הבחירות של המשתמשת. בחירות לפי קטע נשמרות רק אם מספר הקטעים לא השתנה
   const prev=proj.arr||{};const same=prev.nSecs===proj.secs.length;
   const extra=(prev.extra||[]).slice();for(const k of wantExtra)if(!extra.includes(k))extra.push(k);
-  if(proj.ref&&proj.ref.extra)for(const k of proj.ref.extra)if(!extra.includes(k)&&!(prev.removed||[]).includes(k))extra.push(k);
+  const GN=GENRES[G()]||{};
+  for(const k of (proj.ref&&proj.ref.extra||[]).concat(GN.extra||[]))if(!extra.includes(k)&&!(prev.removed||[]).includes(k)&&!(proj.noVoice&&k==="harmony"))extra.push(k);
+  // כלים: מה שבחרת ידנית תמיד נשאר. השאר נקבע לפי הסגנון ושירי הרפרנס
+  const instUser=prev.instUser||Object.fromEntries(Object.keys(prev.insts||{}).map(k=>[k,true]));
+  const mine=Object.fromEntries(Object.keys(instUser).filter(k=>prev.insts&&prev.insts[k]).map(k=>[k,prev.insts[k]]));
   proj.arr={cells,energy,nSecs:proj.secs.length,chords,bars:grid.bars,bpm:det.bpm,
     user:same?prev.user||{}:{},vars:same?prev.vars||{}:{},fx:same&&prev.fx?prev.fx:defaultFx(),
-    mute:prev.mute||{},insts:prev.insts||{},vols:prev.vols||{},extra,removed:prev.removed||[]};
-  if(proj.ref&&proj.ref.insts)for(const [k,v] of Object.entries(proj.ref.insts))if(!prev.insts||!prev.insts[k])proj.arr.insts[k]=v;
+    mute:prev.mute||{},insts:Object.assign({},proj.ref?proj.ref.insts:{},GN.insts||{},mine),instUser,vols:prev.vols||{},extra,removed:prev.removed||[]};
   const R=ranges();const secAt=t=>{const i=R.findIndex(([a,b])=>t>=a&&t<b);return i<0?R.length-1:i};
-  const sc=det.key.minor?MIN:MAJ,root=det.key.root;
+  const sc=scaleOf(det.key),root=det.key.root;
   const chordNotes=(deg,lo)=>[0,2,4].map(k=>{let m=root+sc[(deg+k)%7];while(m<lo)m+=12;while(m>=lo+12)m-=12;return m}).sort((a,b)=>a-b);
   RC={det,grid,chords,energy,R,secAt,sc,root,chordNotes,N:Math.ceil((dur+1)*sr),sr,dur};
   tracksBuf={};
@@ -1876,7 +1982,7 @@ function renderTrack(k){
   const eachBar=fn=>grid.bars.forEach((b0,bi)=>{const si=barSec(b0);fn(b0,bi,si,energy[si],varOf(k,si))});
   const inT=t=>t>=0&&t<dur;
   if(k==="melody"){
-    const inst=proj.inst==="auto"?(det.bpm>115?"synth":"piano"):proj.inst;
+    const inst=proj.inst==="auto"?(GENRES[G()]?GENRES[G()].lead:det.bpm>115?"synth":"piano"):proj.inst;
     if(proj.mode==="mine"){
       for(const n of det.notes){const v=varOf(k,secAt(n.t+.01));let m=n.m;while(m<55)m+=12;while(m>84)m-=12;
         if(v===1)m+=12;const d=v===2?Math.min(n.d,T*.45):n.d;
@@ -1893,9 +1999,11 @@ function renderTrack(k){
     }
   }else if(k==="chords"){
     let inst=instOf("chords");if(inst==="auto")inst=proj.inst==="piano"?"guitar":"keys";
-    const vel={guitar:.28,piano:.15,keys:.13,synth:.08,pad:.1}[inst]||.13;
-    eachBar((b0,bi,si,e,v)=>{const cn=chordNotes(chords[bi],55);
-      const pat=v===0?(e===0?"long":e===1?"half":"pulse"):["","long","pulse8","arp","sync"][v];
+    const vel={guitar:.28,piano:.15,keys:.13,synth:.08,pad:.1,dist:.13}[inst]||.13;
+    const GC={rap:["long","long","half"],rock:["long","pulse8","pulse8"],mizrahi:["half","sync","pulse"]}[G()];
+    eachBar((b0,bi,si,e,v)=>{let cn=chordNotes(chords[bi],55);
+      if(inst==="dist"){let r=root+sc[chords[bi]%7];while(r<40)r+=12;while(r>=52)r-=12;cn=[r,r+7,r+12]} // אקורד "פאוור" של רוק
+      const pat=v===0?(GC?GC[e]:(e===0?"long":e===1?"half":"pulse")):["","long","pulse8","arp","sync"][v];
       if(pat==="arp"){const seq=[0,1,2,1,0,1,2,1];for(let j=0;j<8;j++){const t=b0+j*T/2;if(inT(t))addTone(out,sr,t,T*.45,cn[seq[j]]+(j>=4?12:0),inst==="pad"?"keys":inst,vel*1.4)}return}
       const hits={long:[[0,4]],half:[[0,2],[2,2]],pulse:[[0,1],[1,.5],[1.5,1],[2.5,.5],[3,1]],pulse8:[0,.5,1,1.5,2,2.5,3,3.5].map(x=>[x,.45]),sync:[[0,1.5],[1.5,1],[2.5,1.5]]}[pat];
       for(const [bt,len] of hits){const t=b0+bt*T;if(t+len*T<=0||t>=dur)continue;
@@ -1903,19 +2011,30 @@ function renderTrack(k){
   }else if(k==="bass"){
     const type=instOf("bass");
     eachBar((b0,bi,si,e,v)=>{const deg=chords[bi];let bm=root+sc[deg%7];while(bm>=40)bm-=12;while(bm<28)bm+=12;
-      const pat=v===0?["long","pop","busy"][e]:["","long","rock","bounce"][v];
-      const bp={long:[[0,4]],pop:[[0,2],[2,1.5],[3.5,.5]],busy:[[0,.75],[.75,.75],[1.5,1],[2.5,.5],[3,.5],[3.5,.5]],rock:[0,.5,1,1.5,2,2.5,3,3.5].map(x=>[x,.45]),bounce:[[0,.5,0],[.5,.5,12],[1.5,.5,0],[2,.5,12],[2.5,1,0],[3.5,.5,12]]}[pat];
+      const pat=v===0?({rap:["long","trap","trap"],rock:["long","rock","rock"],mizrahi:["long","maq","maq"]}[G()]||["long","pop","busy"])[e]:["","long","rock","bounce"][v];
+      const bp={trap:[[0,2.4],[2.5,1.4]],maq:[[0,1.4],[2,.9],[3,.45,7],[3.5,.45]],long:[[0,4]],pop:[[0,2],[2,1.5],[3.5,.5]],busy:[[0,.75],[.75,.75],[1.5,1],[2.5,.5],[3,.5],[3.5,.5]],rock:[0,.5,1,1.5,2,2.5,3,3.5].map(x=>[x,.45]),bounce:[[0,.5,0],[.5,.5,12],[1.5,.5,0],[2,.5,12],[2.5,1,0],[3.5,.5,12]]}[pat];
       for(const [bt,len,oct] of bp){const t=b0+bt*T;if(inT(t))addBass(out,sr,t,len*T*.9,bm+(oct||0),.42,type)}});
   }else if(k==="drums"){
-    const kitType=instOf("drums");const kit=drumKit(sr,hashStr("kit"+det.bpm+kitType));
+    const kitType=instOf("drums");const kit=drumKit(sr,hashStr("kit"+det.bpm+kitType));const dk=darbukaKit(sr);
     const g=kitType==="soft"?.6:1;
     const hit=(smp,t,vv)=>{const o=Math.floor(t*sr);if(o<0)return;const m=Math.min(smp.length,N-o);for(let i=0;i<m;i++)out[o+i]+=smp[i]*vv*g};
     const PAT={e0:{k:[],s:[],h:[0,4,8,12],rim:[4,12]},e1:{k:[0,8,10],s:[4,12],h:[0,2,4,6,8,10,12,14]},e2:{k:[0,6,8,10],s:[4,12],h:[...Array(16).keys()],o:[2,6,10,14]},
       half:{k:[0,10],s:[8],h:[0,4,8,12]},disco:{k:[0,4,8,12],s:[4,12],h:[0,4,8,12],o:[2,6,10,14]},hiphop:{k:[0,7,10],s:[4,12],h:[0,2,4,6,8,10,12,14],sw:true},hats:{k:[],s:[],h:[...Array(16).keys()]}};
+    const E8=[0,2,4,6,8,10,12,14],ALL=[...Array(16).keys()];
+    // מקצבים לפי סגנון: טראפ (חצי קצב וגלגולי מצלתיים), רוק, מקסום מזרחי בדרבוקה, ופופ
+    const GP={rap:{e0:{k:[0],s:[],h:[0,4,8,12]},e1:{k:[0,10],s:[8],h:E8,roll:[14]},e2:{k:[0,3,10],s:[8],h:ALL,roll:[6,14]}},
+      rock:{e0:{k:[0,8],s:[],h:[0,4,8,12],rim:[4,12]},e1:{k:[0,8,10],s:[4,12],h:E8},e2:{k:[0,3,8,10],s:[4,12],h:E8,o:E8}},
+      mizrahi:{e0:{k:[],s:[],h:[],dum:[0,8],tek:[2,6,12]},e1:{k:[0,8],s:[],h:[],dum:[0,8],tek:[2,6,12],ka:[4,10,14]},e2:{k:[0,8],s:[4,12],h:E8,dum:[0,8],tek:[2,6,12],ka:[3,4,10,14,15]}},
+      pop:{e2:{k:[0,4,8,12],s:[4,12],h:E8,o:[2,6,10,14]}}}[G()]||{};
+    const MAQ={dum:[0,8],tek:[2,6,12],ka:[4,10,14]};
     let lastSec=-1;
     grid.bars.forEach(b0=>{for(let i=0;i<16;i++){let t=b0+i*s16;if(!inT(t))continue;const si=secAt(t),e=energy[si],v=varOf(k,si);
-      const p=PAT[v===0?"e"+e:["","half","disco","hiphop","hats"][v]];if(p.sw&&i%2===1)t+=s16*.33;
-      if(si!==lastSec){if(e>=1&&v!==4)hit(kit.crash,t,.6);lastSec=si}
+      let p=v===0?(GP["e"+e]||PAT["e"+e]):PAT[["","half","disco","hiphop","hats"][v]];
+      if(kitType==="darbuka"&&!p.dum)p=Object.assign({},p,{dum:MAQ.dum,tek:MAQ.tek,ka:e>=1?MAQ.ka:[]},e<2?{s:[],h:[],o:[]}:{});
+      if(p.sw&&i%2===1)t+=s16*.33;
+      if(p.dum){if(p.dum.includes(i))hit(dk.dum,t,.8);if(p.tek.includes(i))hit(dk.tek,t,.55);if(p.ka&&p.ka.includes(i))hit(dk.ka,t,.45)}
+      if(p.roll&&p.roll.includes(i))for(let j=1;j<4;j++)hit(kit.hat,t+j*s16/3,.16);
+      if(si!==lastSec){if(e>=1&&v!==4&&!p.dum)hit(kit.crash,t,.6);lastSec=si}
       const snare=kitType==="electro"?kit.clap:kitType==="soft"?kit.rim:kit.snare;
       if(p.k.includes(i))hit(kit.kick,t,kitType==="electro"?1.1:.9);if(p.s.includes(i))hit(snare,t,.5);if(p.rim&&p.rim.includes(i))hit(kit.rim,t,.3);
       if(p.h.includes(i))hit(p.o&&p.o.includes(i)?kit.ohat:kit.hat,t,(i%4===0?.4:.25)*(kitType==="electro"?.8:1))}});
@@ -1961,13 +2080,23 @@ function mixGraph(ctx,from,dest){
     const src=ctx.createBufferSource();src.buffer=buf;
     const cg=ctx.createGain(),g=ctx.createGain();g.gain.value=proj.arr.mute[tr.id]?0:volOf(tr);
     sched(cg.gain,i=>cellOn(tr.id,i)?1:0);
-    src.connect(cg);cg.connect(g);g.connect(master);
+    const eg=ctx.createGain();schedEdits(eg.gain,tr.id,from,t0); // הנמכה או השתקה בטווח זמן
+    src.connect(cg);cg.connect(eg);eg.connect(g);g.connect(master);
     if(tr.id!=="drums"&&tr.id!=="bass"&&tr.id!=="perc"){const s=ctx.createGain();
       if(tr.id==="vocal")sched(s.gain,i=>proj.arr.fx[i]&&proj.arr.fx[i].reverb?.9:.2);else s.gain.value=tr.id==="harmony"?.6:.5;
       g.connect(s);s.connect(rev)}
     src.start(t0,Math.min(from,buf.duration));srcs.push(src);
   }
   return {srcs,t0};
+}
+// שינויים בטווח זמן: "להנמיך את המוזיקה מ-X עד Y" או "בלי תופים מ-X עד Y"
+function editGain(id,t){let v=1;for(const e of proj.edits||[]){if(t<e.a||t>=e.b)continue;
+  if(e.kind==="duck"&&id!=="vocal"&&id!=="harmony")v*=Math.pow(10,e.db/20);
+  if(e.kind==="mute"&&e.tracks.includes(id))v=0}return v}
+function schedEdits(param,id,from,t0){
+  param.setValueAtTime(editGain(id,from),t0);
+  const pts=[...new Set((proj.edits||[]).flatMap(e=>[e.a,e.b]))].filter(t=>t>from).sort((a,b)=>a-b);
+  for(const t of pts)param.setTargetAtTime(editGain(id,t+1e-3),t0+(t-from),.04);
 }
 let mix=null,mixFrom=0,mixRaf=0;
 const mixNow=()=>mix?Math.min(proj.dur,mixFrom+ac().currentTime-mix.t0):mixFrom;
@@ -1994,6 +2123,8 @@ function drawRoll(){
     const y=m=>H-6*dpr-(m-lo)/(hi-lo)*(H-12*dpr);
     for(const n of ns){c.fillStyle=SEC_COLORS[Math.max(0,R.findIndex(([a,b])=>n.t>=a&&n.t<b))%SEC_COLORS.length];const x0=X(n.t),x1=X(n.t+n.d);c.fillRect(Math.min(x0,x1),y(n.m)-2*dpr,Math.max(2*dpr,Math.abs(x1-x0)),4*dpr)}
   }
+  for(const e of proj.edits||[]){const x0=X(e.a),x1=X(e.b);c.fillStyle=e.kind==="duck"?"#38bdf833":"#2a105226";c.fillRect(Math.min(x0,x1),0,Math.abs(x1-x0),H);
+    c.fillStyle=e.kind==="duck"?"#38bdf8":"#2a1052";c.fillRect(Math.min(x0,x1),H-4*dpr,Math.abs(x1-x0),4*dpr)}
   c.fillStyle="#2a1052";c.fillRect(X(mixNow())-dpr,0,2*dpr,H);
   $("mClock").textContent=fmt(mixNow())+" / "+fmt(proj.dur);
 }
@@ -2021,7 +2152,9 @@ function paintGrid(){
 }
 function showArr(){
   const d=proj.det;$("arrCard").hidden=false;
-  $("detInfo").textContent=T_("זיהיתי {n} תווים · סולם {k} · קצב {b} BPM",{n:d.notes.length,k:T_(NOTE_HE[d.key.root])+" "+T_(d.key.minor?"מינור":"מז'ור"),b:d.bpm});
+  $("detInfo").textContent=proj.noVoice?T_("סגנון {g} · סולם {k} · קצב {b} BPM",{g:T_((GENRES[G()]||{name:"✨ אוטומטי"}).name),k:keyName(d.key),b:d.bpm})
+    :T_("זיהיתי {n} תווים · סולם {k} · קצב {b} BPM",{n:d.notes.length,k:keyName(d.key),b:d.bpm});
+  renderEdits();
   renderGrid();requestAnimationFrame(drawRoll);
 }
 
@@ -2071,13 +2204,13 @@ function openTrackSheet(tr){
     vol.onchange=()=>{proj.arr.vols[tr.id]=vol.value/100;saveProj();mixRestart()};B.append(vol);
     const opts=tr.id==="melody"?Object.fromEntries(Object.entries(INSTS).filter(([k])=>k!=="auto")):TRACK_INSTS[tr.id];
     if(opts){B.append(label(tr.id==="melody"?"באיזה כלי לנגן את המנגינה?":"איזה כלי?"));const ch=el("div","chips");const cur=tr.id==="melody"?proj.inst:instOf(tr.id);
-      for(const [k,n] of Object.entries(opts)){const b=el("button","chip",T_(n),async()=>{if(tr.id==="melody"){proj.inst=k;renderInsts();BASE_TRACKS[1].emoji=INST_EMOJI[k]}else proj.arr.insts[tr.id]=k;await rerender(tr.id);renderGrid();openTrackSheet(tr)});b.setAttribute("aria-pressed",k===cur);ch.append(b)}
+      for(const [k,n] of Object.entries(opts)){const b=el("button","chip",T_(n),async()=>{if(tr.id==="melody"){proj.inst=k;renderInsts();BASE_TRACKS[1].emoji=INST_EMOJI[k]}else{proj.arr.insts[tr.id]=k;(proj.arr.instUser=proj.arr.instUser||{})[tr.id]=true}await rerender(tr.id);renderGrid();openTrackSheet(tr)});b.setAttribute("aria-pressed",k===cur);ch.append(b)}
       B.append(ch)}
   });
 }
 function openAddSheet(){
   openSheet(T_("➕ הוספת כלי"),B=>{
-    const have=proj.arr.extra||[];const left=Object.entries(EXTRA_DEFS).filter(([k])=>!have.includes(k));
+    const have=proj.arr.extra||[];const left=Object.entries(EXTRA_DEFS).filter(([k])=>!have.includes(k)&&!(proj.noVoice&&k==="harmony"));
     if(!left.length){B.append(label("כל הכלים כבר בשיר 🎉"));return}
     for(const [k,d] of left){const b=el("button","addopt");b.append(el("b",null,d.emoji+" "+T_(d.name)),el("small",null,T_(d.desc)));
       b.onclick=async()=>{proj.arr.extra=have.concat(k);proj.arr.removed=(proj.arr.removed||[]).filter(x=>x!==k);closeSheet();
@@ -2095,7 +2228,7 @@ async function runBuild(){
   try{
     await buildTracks((msg,p)=>{$("toArrange").textContent=T_(msg)+" "+Math.round(p*100)+"%"});
     showArr();
-    if(proj.mode==="mine"&&proj.det.notes.length<4)toast(T_("כמעט לא זיהיתי מנגינה. נסי לזמזם ברור יותר, בלי רעשי רקע"),5000);
+    if(proj.mode==="mine"&&!proj.noVoice&&proj.det.notes.length<4)toast(T_("כמעט לא זיהיתי מנגינה. נסי לזמזם ברור יותר, בלי רעשי רקע"),5000);
     else toast(T_("הכלים מוכנים! לחצי ▶ כדי לשמוע 🎶"));
   }catch(e){console.error(e);toast(T_("משהו השתבש בבניית הכלים. נסי שוב"))}
   btns.forEach(b=>b.disabled=false);$("toArrange").textContent=lbl;
@@ -2190,12 +2323,12 @@ function psola(x,sr,marks,ratioAt,a,b,q){
 }
 const midiOf=f=>69+12*Math.log2(f/440);
 function nearestScale(m){ // התו הקרוב ביותר בסולם של השיר
-  const k=proj.det.key,sc=k.minor?MIN:MAJ;let best=Math.round(m),bd=99;
+  const k=proj.det.key,sc=scaleOf(k);let best=Math.round(m),bd=99;
   for(let o=-1;o<=1;o++)for(const s of sc){const c=12*(Math.floor(m/12)+o)+k.root+s;if(Math.abs(c-m)<bd){bd=Math.abs(c-m);best=c}}
   return best;
 }
 function scaleStep(note,steps){ // תו שנמצא כמה מדרגות מעל/מתחת בסולם
-  const k=proj.det.key,sc=k.minor?MIN:MAJ;const rel=((note-k.root)%12+12)%12;let idx=sc.indexOf(rel);if(idx<0)idx=0;
+  const k=proj.det.key,sc=scaleOf(k);const rel=((note-k.root)%12+12)%12;let idx=sc.indexOf(rel);if(idx<0)idx=0;
   const oct=Math.floor((note-k.root-sc[idx])/12),ni=idx+steps,o2=oct+Math.floor(ni/7);
   return k.root+12*o2+sc[((ni%7)+7)%7];
 }
@@ -2333,7 +2466,7 @@ function renderRefs(){
   proj.refs.forEach((r,i)=>{const d=el("div","refitem");
     const words=[r.energy>.6?T_("אנרגטי"):r.energy<.3?T_("רגוע"):T_("בינוני"),r.bright>.55?T_("בהיר ואלקטרוני"):r.bright<.35?T_("חם ואקוסטי"):""].filter(Boolean).join(", ");
     d.append(el("span",null,`🎧 ${r.name} · ${r.bpm} BPM · ${T_(NOTE_HE[r.key.root])} ${T_(r.key.minor?"מינור":"מז'ור")} · ${words}`),
-      el("button",null,"✕",()=>{proj.refs.splice(i,1);proj.ref=refProfile();renderRefs();saveProj();markDirty()}));L.append(d)});
+      el("button",null,"✕",()=>{proj.refs.splice(i,1);proj.ref=refProfile();renderRefs();saveProj();markDirty();refsChanged()}));L.append(d)});
   if(proj.ref){const p=proj.ref;const ins=TRACK_INSTS;
     L.append(el("p","hint",T_("ישפיע על: תופים {d}, אקורדים {c}, בס {b}",{d:T_(ins.drums[p.insts.drums]),c:T_(ins.chords[p.insts.chords]),b:T_(ins.bass[p.insts.bass])})+(p.extra.length?" · "+T_("יתווספו")+" "+p.extra.map(k=>T_(EXTRA_DEFS[k].name)).join(", "):"")))}
 }
@@ -2341,7 +2474,7 @@ $("refBtn").onclick=()=>$("refFile").click();
 $("refFile").onchange=async e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
   if(proj.refs.length>=3){toast(T_("אפשר עד 3 שירי רפרנס"));return}
   const btn=$("refBtn");btn.disabled=true;btn.textContent=T_("⏳ מקשיבה לשיר...");
-  try{const r=await analyzeRef(f);proj.refs.push(r);proj.ref=refProfile();renderRefs();saveProj();markDirty();
+  try{const r=await analyzeRef(f);proj.refs.push(r);proj.ref=refProfile();renderRefs();saveProj();markDirty();refsChanged();
     toast(T_("למדתי מ\"{n}\" 🎧 ההשפעה תיכנס כשתבני את הכלים",{n:r.name}),4500)}
   catch(err){console.error(err);toast(T_("לא הצלחתי לקרוא את השיר. נסי MP3 או M4A"))}
   btn.disabled=false;btn.textContent=T_("➕ הוספת שיר רפרנס");
@@ -2370,13 +2503,235 @@ function rerenderAll(){
   $("langBtn").textContent=LANG==="he"?"English":"עברית";$("gLang").textContent=$("langBtn").textContent;if(window.cloud)renderProjects();
   if(typeof restyleChips==="function")restyleChips();
   if(typeof renderList==="function")renderList();
-  if(proj.mono){renderSecs();peaksCache=null;drawWave();renderInsts();renderRefs()}
+  if(proj.mono){renderSecs();peaksCache=null;drawWave();renderInsts();renderRefs();renderGenres()}
+  if(typeof renderChat==="function"&&!$("chat").hidden)renderChat();
   if(proj.arr&&!$("arrCard").hidden)showArr();
 }
 window.extras={analyzeRef,refProfile,studioSong}; // לבדיקות
 applyLang(); // מפעילים את השפה השמורה
 // כשהאתר פתוח מהאינטרנט, שומרים אותו בטלפון כדי שיעבוד גם בלי רשת ויהיה אפשר להתקין אותו
 if(location.protocol==="https:"&&!inArtifact()&&"serviceWorker" in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+
+"use strict";
+/* ============ סגנונות, מוזיקה בלי הקלטה, ושינויים בטווח זמן ============ */
+
+// ---------- סגנונות ----------
+const GENRES={
+  pop:{name:"🎤 פופ",bpm:[96,124,108],minorP:.3,lead:"synth",insts:{chords:"keys",bass:"synth",drums:"electro"},extra:["arp"]},
+  rock:{name:"🤘 רוק",bpm:[108,150,126],minorP:.5,lead:"dist",insts:{chords:"dist",bass:"electric",drums:"acoustic"},extra:[]},
+  rap:{name:"🎧 ראפ / טראפ",bpm:[130,160,140],minorP:1,lead:"bell",insts:{chords:"pad",bass:"b808",drums:"electro",counter:"bell"},extra:["counter"]},
+  mizrahi:{name:"🪘 מזרחי / ים-תיכוני",bpm:[90,118,100],minorP:1,hijaz:true,lead:"oud",insts:{chords:"keys",drums:"darbuka",counter:"oud",strings:"strings"},extra:["strings","counter"]}
+};
+// מתרגם תיאור חופשי ("טראפ אפל", "רוק של שנות ה-90") לאחד הסגנונות
+function genreFromText(t){t=(t||"").toLowerCase();
+  if(/ראפ|היפ.?הופ|טראפ|דריל|rap|hip.?hop|trap|drill|boom.?bap/.test(t))return "rap";
+  if(/רוק|מטאל|פאנק|גראנג|rock|metal|punk|grunge/.test(t))return "rock";
+  if(/מזרחי|ים.?תיכוני|ערבי|יווני|טורקי|חפלה|mizrahi|mediterr|arab|greek|turkish|oriental|middle.?east/.test(t))return "mizrahi";
+  if(/פופ|דאנס|אלקטרו|רגאטון|דיסקו|pop|dance|edm|electro|reggaeton|disco/.test(t))return "pop";
+  return "";
+}
+function setGenre(g,text){
+  proj.genre=GENRES[g]?g:"";if(text!=null)proj.genreText=text;
+  if(proj.arr&&proj.arr.instUser)for(const k of Object.keys(proj.arr.insts||{}))if(!proj.arr.instUser[k])delete proj.arr.insts[k];
+  renderGenres();saveProj();markDirty();
+}
+function renderGenres(){
+  const box=$("genres");box.replaceChildren();
+  for(const [k,n] of [["","✨ אוטומטי"],...Object.entries(GENRES).map(([k,g])=>[k,g.name])]){
+    const b=el("button","chip",T_(n),()=>setGenre(k));b.type="button";b.setAttribute("aria-pressed",(proj.genre||"")===k);box.append(b)}
+  $("genreTxt").value=proj.genreText||"";
+}
+$("genreTxt").onchange=()=>{const t=$("genreTxt").value.trim();const g=genreFromText(t);
+  setGenre(g||proj.genre||"",t);
+  if(t&&!g)toast(T_("לא זיהיתי סגנון מהתיאור. אפשר לבחור סגנון למעלה, או לבקש מהצ'אט 💬"),4500);
+  else if(g)toast(T_("סגנון: {g}. לחצי \"לבנות\" כדי לשמוע",{g:T_(GENRES[g].name)}))};
+function renderModeUI(){
+  const nv=!!proj.noVoice;$("modeBox").hidden=nv;$("nvInfo").hidden=!nv;
+  if(nv)$("nvInfo").textContent=T_("🎹 מוזיקה בלי שירה ({d}). אפשר להוריד MP3 ולשיר עליה, או לבקש מהצ'אט מילים 💬",{d:fmt(proj.dur)});
+  renderInsts();
+}
+
+// ---------- פרויקט בלי הקלטה: ציר זמן שקט שעליו בונים את הכלים ----------
+function loadSilent(dur){
+  if(!(dur>2))return false;
+  vStop();++loadSeq;
+  Object.assign(proj,{blob:null,buf:null,mono:new Float32Array(1),sr:44100,dur,noVoice:true,cuts:[],secs:[{name:"בית",note:""}]}); // הקטעים האמיתיים נטענים מיד אחר כך
+  $("waveBox").hidden=true;$("secCard").hidden=false;$("modeCard").hidden=false;$("toArrange").disabled=false;
+  renderSecs();renderModeUI();return true;
+}
+// שדות שנשמרים מעבר לאודיו ולקטעים
+function restoreMeta(m){
+  Object.assign(proj,{noVoice:!!m.noVoice,guide:!!m.guide,genre:m.genre||"",genreText:m.genreText||"",edits:m.edits||[],chat:m.chat||[]});
+  renderGenres();renderEdits();renderModeUI();
+}
+
+// ---------- מבנה, אקורדים ומנגינה מנחה ----------
+const PROGS={maj:{v:[[0,5,3,4],[0,3,0,4],[0,4,5,3]],c:[[3,4,0,5],[0,4,5,3],[5,3,0,4]],b:[[5,3,4,4],[3,4,5,5]]},
+  min:{v:[[0,5,2,6],[0,3,4,0],[0,6,5,6]],c:[[5,2,6,0],[0,6,5,6],[3,4,0,0]],b:[[3,4,5,4],[5,6,0,0]]},
+  hij:{v:[[0,0,3,0],[0,1,0,6]],c:[[3,6,1,0],[0,1,3,0]],b:[[6,6,1,1],[3,3,0,0]]},
+  rap:{v:[[0,0,5,5],[0,5,6,5],[0,3,0,5]],c:[[0,5,6,5],[5,5,0,0]],b:[[3,3,0,0]]}};
+// מבנה: פתיח, בית-פזמון, גשר רק אם יש אחריו מקום לפזמון, ותמיד מסיימים בפזמון ואז סיום
+function formFor(nb){
+  const body=nb-8,out=[["פתיח",4]];let used=0;
+  const SEQ=["בית","פזמון","בית","פזמון","גשר","פזמון"];
+  for(let i=0;;i++){const n=i<SEQ.length?SEQ[i]:(i%2?"פזמון":"בית");
+    if(n==="גשר"&&body-used<16)continue;
+    if(used+(n==="בית"?16:8)>body)break; // בית רק אם יש אחריו מקום לפזמון
+    const last=out[out.length-1];if(last[0]===n)last[1]+=8;else out.push([n,8]);used+=8;if(i>40)break}
+  const left=body-used,last=out[out.length-1];
+  if(last[0]!=="פזמון"&&left>=4)out.push(["פזמון",left]);else last[1]+=left;
+  out.push(["סיום",4]);return out;
+}
+function makeGuide(key,bpm,form,chords,genre,r){
+  const T=60/bpm,sc=scaleOf(key),rap=genre==="rap",notes=[];
+  const center=key.root+(rap?57:63);const pool=[];
+  for(let m=center-9;m<=center+14;m++)if(sc.includes(((m-key.root)%12+12)%12))pool.push(m);
+  const near=(m,set)=>set.reduce((b,c)=>Math.abs(c-m)<Math.abs(b-m)?c:b,set[0]);
+  const RH=rap?[[0,.5,1,1.5,2,2.25,2.5,3,3.5,4,4.5,5,5.5,6,6.5],[0,.25,.5,1,1.5,2,2.5,2.75,3,4,4.5,5,5.25,5.5,6],[.5,1,1.5,2,2.5,3,4.5,5,5.5,6,6.5]]
+    :[[0,1,1.5,2,3,4,5.5,6],[0,.5,1,2,2.5,3,4,4.5,5,6],[1,1.5,2,2.5,3,4,5,6,6.5],[0,1.5,2,3,4,5.5,6,7]];
+  const motifs={};let bar=0,prev=center;
+  for(const [name,nb] of form){
+    if(name==="פתיח"||name==="סיום"){bar+=nb;continue}
+    const mo=motifs[name]=motifs[name]||{rh:pick(r,RH),steps:Array.from({length:16},()=>pick(r,[-1,-1,1,1,2,-2,0])),lift:name==="פזמון"?4:name==="גשר"?2:0};
+    for(let p=0;p<nb;p+=2){
+      const b0=(bar+p)*4*T,end=Math.min(8,(nb-p)*4);
+      mo.rh.forEach((on,j)=>{if(on>=end)return;
+        const nx=j+1<mo.rh.length?Math.min(mo.rh[j+1],end):Math.min(end,on+2);
+        const bi=bar+p+(on>=4?1:0),deg=chords[bi]||0;
+        const ct=[0,2,4].map(k=>key.root+sc[(deg+k)%7]),cset=pool.filter(m=>ct.some(c=>((m-c)%12+12)%12===0));
+        let m;
+        if(rap)m=j%4===3?near(prev+(mo.steps[j%16]>0?2:-1),pool):near(center+mo.lift,cset.length?cset:pool);
+        else if(on%2===0||j===0)m=near(prev+mo.lift*(j===0?1:0),cset.length?cset:pool);
+        else{const i=pool.indexOf(near(prev,pool));m=pool[Math.max(0,Math.min(pool.length-1,i+mo.steps[j%16]))]}
+        // לא מתרחקים יותר מדי מהמרכז
+        if(m>center+12+mo.lift)m-=12;if(m<center-8)m+=12;prev=m;
+        notes.push({t:b0+on*T,d:Math.max(.12,(nx-on)*T*.92),m,mf:m});
+      });
+    }
+    bar+=nb;
+  }
+  return notes;
+}
+function majorityKey(refs){const c={};for(const r of refs){const k=r.key.root+(r.key.minor?"m":"");c[k]=(c[k]||0)+1}
+  const best=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];return best?{root:parseInt(best[0]),minor:best[0].endsWith("m")}:null}
+
+async function createInstrumental(o){
+  vStop();mixStop();
+  const g=GENRES[o.genre]?o.genre:"pop",GN=GENRES[g],r=rng32(Date.now()>>>0);
+  // קצב: לפי שירי ההשראה (אם יש), בטווח שמתאים לסגנון
+  const ref=refProfile();let bpm=GN.bpm[2]+Math.round((r()-.5)*8);
+  if(ref){bpm=Math.round(ref.bpm);if(g==="rap"&&bpm<110)bpm*=2}
+  bpm=Math.max(GN.bpm[0],Math.min(GN.bpm[1],bpm));
+  const rk=majorityKey(proj.refs||[]);
+  const minor=rk?rk.minor:r()<GN.minorP;
+  const key={root:rk?rk.root:pick(r,minor?[2,4,7,9,0]:[0,2,5,7,9]),minor:GN.hijaz?true:minor};
+  if(GN.hijaz)key.mode="hijaz";
+  const barS=240/bpm,nb=Math.max(16,Math.round(o.len/barS/4)*4),form=formFor(nb);
+  const P=GN.hijaz?PROGS.hij:g==="rap"?PROGS.rap:key.minor?PROGS.min:PROGS.maj;
+  const pv=pick(r,P.v),pc=pick(r,P.c),pb=pick(r,P.b);const chords=[];
+  for(const [name,n] of form){const pr=name==="פזמון"||name==="סולו"?pc:name==="גשר"?pb:pv;for(let i=0;i<n;i++)chords.push(pr[i%4])}
+  const notes=o.guide?makeGuide(key,bpm,form,chords,g,r):[];
+  const dur=nb*barS+1.5;
+  loadSilent(dur);arrInvalidate(true);
+  let t=0;const cuts=[],secs=[];
+  for(const [name,n] of form){if(t>0)cuts.push(Math.round(t*100)/100);secs.push({name,note:"",lyr:""});t+=n*barS}
+  Object.assign(proj,{id:null,title:"",cuts,secs,guide:!!o.guide,mode:o.guide?"mine":"ai",inst:GN.lead,edits:[],chat:[],genre:g,genreText:o.text||"",
+    det:{notes,off:0,key,bpm,phase:0,chords}});
+  $("pTitle").value="";renderSecs();renderGenres();renderEdits();renderModeUI();saveProj();
+  await runBuild();
+  $("arrCard").scrollIntoView({behavior:"smooth",block:"start"});
+  if(o.lyrics)setTimeout(()=>chatAsk(T_("תכתבי לי הצעה למילים לכל הקטעים של השיר{t}, שיתאימו למקצב ולמבנה, ותכניסי אותן לקטעים",{t:o.topic?" "+T_("על")+" "+o.topic:""})),600);
+}
+
+// ---------- חלונית "אין לי עדיין שירה" ----------
+let nvOpen=false;
+const NV={genre:"pop",text:"",len:120,beat:true,guide:false,lyrics:false,topic:""};
+function refsChanged(){if(nvOpen&&$("psheet").classList.contains("open"))openComposer();else nvOpen=false}
+function openComposer(){
+  nvOpen=true;
+  openSheet(T_("🎹 מוזיקה בלי שירה"),B=>{
+    B.append(label("מה תרצו שאכין? אפשר לבחור כמה:"));
+    const w=el("div","chips");
+    for(const [k,n] of [["beat","🥁 ביט ומוזיקה לשיר עליה"],["guide","🎵 קו מנגינה מנחה"],["lyrics","✍️ הצעות למילים"]]){
+      const b=el("button","chip",T_(n),()=>{NV[k]=!NV[k];if(!NV.beat&&!NV.guide&&!NV.lyrics)NV[k]=true;openComposer()});b.setAttribute("aria-pressed",NV[k]);w.append(b)}
+    B.append(w);
+    B.append(label("באיזה סגנון?"));
+    const gc=el("div","chips");
+    for(const [k,gg] of Object.entries(GENRES)){const b=el("button","chip",T_(gg.name),()=>{NV.genre=k;openComposer()});b.setAttribute("aria-pressed",NV.genre===k);gc.append(b)}
+    B.append(gc);
+    const gt=el("input","txt");gt.dir="auto";gt.maxLength=80;gt.value=NV.text;gt.placeholder=T_("או תארו סגנון במילים, למשל: טראפ אפל, רוק של שנות ה-90");
+    gt.onchange=()=>{NV.text=gt.value.trim();const g=genreFromText(NV.text);if(g){NV.genre=g;openComposer()}};B.append(gt);
+    B.append(label("🎧 שירי השראה (לא חובה): מהם לומדים קצב, סולם ואנרגיה. השירים עצמם לא נשמרים."));
+    for(const [i,rf] of (proj.refs||[]).entries()){const d=el("div","refitem");d.append(el("span",null,`🎧 ${rf.name} · ${rf.bpm} BPM`),el("button",null,"✕",()=>{proj.refs.splice(i,1);proj.ref=refProfile();renderRefs();openComposer()}));B.append(d)}
+    if((proj.refs||[]).length<3)B.append(el("button","sbtn",T_("➕ הוספת שיר השראה"),()=>$("refFile").click()));
+    B.append(label("אורך:"));
+    const lc=el("div","chips");
+    for(const s of [60,120,180]){const b=el("button","chip",fmt(s),()=>{NV.len=s;openComposer()});b.setAttribute("aria-pressed",NV.len===s);lc.append(b)}
+    B.append(lc);
+    if(NV.lyrics){B.append(label("על מה השיר? (בשביל המילים)"));const tp=el("input","txt");tp.dir="auto";tp.maxLength=120;tp.value=NV.topic;tp.placeholder=T_("למשל: על חברות שלא נגמרת");tp.oninput=()=>{NV.topic=tp.value.trim()};B.append(tp)}
+    const go=el("button","go",T_("✨ ליצור"),async()=>{nvOpen=false;closeSheet();
+      toast(T_("⏳ מלחינה..."));await createInstrumental({genre:NV.genre,text:NV.text,len:NV.len,guide:NV.guide,lyrics:NV.lyrics,topic:NV.topic})});
+    B.append(go);
+  });
+}
+$("psX").addEventListener("click",()=>{nvOpen=false});
+$("nvBtn").onclick=async()=>{
+  if(proj.mono&&!(typeof member!=="undefined"&&member)&&!await askConfirm(T_("הפרויקט הנוכחי יימחק מהמכשיר. להמשיך?")))return;
+  openComposer();
+};
+
+// ---------- שינויים בטווח זמן ----------
+const parseT=s=>{s=String(s||"").trim().replace(",",".");const m=s.match(/^(\d+):(\d{1,2}(?:\.\d+)?)$/);if(m)return +m[1]*60+ +m[2];const n=parseFloat(s);return isNaN(n)?NaN:n};
+const DUCK={"-4":"קצת","-8":"בינונית","-14":"הרבה"};
+function addEdit(e){
+  e.a=Math.max(0,Math.min(proj.dur,e.a));e.b=Math.max(0,Math.min(proj.dur,e.b));if(e.b-e.a<.3)return false;
+  (proj.edits=proj.edits||[]).push(e);proj.edits.sort((x,y)=>x.a-y.a);
+  saveProj();renderEdits();drawRoll();mixRestart();return true;
+}
+function editText(e){
+  const nm=id=>{const t=allTracks().find(x=>x.id===id)||(EXTRA_DEFS[id]?{id,...EXTRA_DEFS[id]}:null);return t?T_(t.name):id};
+  return fmt(e.a)+"–"+fmt(e.b)+" · "+(e.kind==="duck"?"🔉 "+T_("הנמכת המוזיקה")+" ("+T_(DUCK[e.db]||"בינונית")+")":"🔇 "+T_("בלי")+" "+e.tracks.map(nm).join(", "));
+}
+function renderEdits(){
+  const L=$("editList");L.replaceChildren();
+  (proj.edits||[]).forEach((e,i)=>{const d=el("div","refitem");
+    d.append(el("span",null,editText(e)),el("button",null,"▶",()=>mixPlay(Math.max(0,e.a-2))),
+      el("button",null,"✕",()=>{proj.edits.splice(i,1);saveProj();renderEdits();drawRoll();mixRestart()}));L.append(d)});
+}
+function openRangeSheet(){
+  const st={a:mixNow(),b:Math.min(proj.dur,mixNow()+15),kind:"duck",db:-8,tracks:[]};
+  const draw=()=>openSheet(T_("⏱️ שינוי בטווח זמן"),B=>{
+    B.append(label("מאיזה רגע עד איזה רגע? (דקות:שניות)"));
+    const row=el("div","tools");
+    const ia=el("input","txt tin"),ib=el("input","txt tin");
+    for(const [inp,k] of [[ia,"a"],[ib,"b"]]){inp.dir="ltr";inp.inputMode="decimal";inp.value=fmt(st[k]);inp.onchange=()=>{const v=parseT(inp.value);if(!isNaN(v))st[k]=v;inp.value=fmt(st[k])}}
+    row.append(el("span",null,T_("מ-")),ia,el("span",null,T_("עד")),ib);B.append(row);
+    const r2=el("div","tools");
+    r2.append(el("button","sbtn",T_("📍 התחלה = איפה שהנגן עומד"),()=>{st.a=mixNow();ia.value=fmt(st.a)}),el("button","sbtn",T_("📍 סוף = איפה שהנגן עומד"),()=>{st.b=mixNow();ib.value=fmt(st.b)}));B.append(r2);
+    B.append(label("או לבחור קטע שלם:"));
+    const sc=el("div","chips");
+    ranges().forEach(([a,b],i)=>{const c=el("button","chip",T_(proj.secs[i].name)+" "+fmt(a),()=>{st.a=a;st.b=b;ia.value=fmt(a);ib.value=fmt(b)});c.style.borderColor=SEC_COLORS[i%SEC_COLORS.length];sc.append(c)});
+    B.append(sc);
+    B.append(label("מה לעשות בטווח הזה?"));
+    const kc=el("div","chips");
+    for(const [k,n] of [["duck","🔉 להנמיך את המוזיקה (מקום לשירה)"],["mute","🔇 להוריד כלים"]]){const b=el("button","chip",T_(n),()=>{st.kind=k;draw()});b.setAttribute("aria-pressed",st.kind===k);kc.append(b)}
+    B.append(kc);
+    if(st.kind==="duck"){const dc=el("div","chips");
+      for(const [db,n] of Object.entries(DUCK)){const b=el("button","chip",T_(n),()=>{st.db=+db;draw()});b.setAttribute("aria-pressed",st.db===+db);dc.append(b)}B.append(dc)}
+    else{const tc=el("div","chips");
+      for(const tr of allTracks().filter(t=>t.id!=="vocal")){const b=el("button","chip",tr.emoji+" "+T_(tr.name),()=>{st.tracks=st.tracks.includes(tr.id)?st.tracks.filter(x=>x!==tr.id):st.tracks.concat(tr.id);draw()});b.setAttribute("aria-pressed",st.tracks.includes(tr.id));tc.append(b)}
+      B.append(tc)}
+    B.append(el("button","go",T_("✓ להחיל"),()=>{
+      if(!(st.b>st.a)){toast(T_("הסוף צריך להיות אחרי ההתחלה"));return}
+      if(st.kind==="mute"&&!st.tracks.length){toast(T_("בחרי לפחות כלי אחד"));return}
+      const e=st.kind==="duck"?{a:st.a,b:st.b,kind:"duck",db:st.db}:{a:st.a,b:st.b,kind:"mute",tracks:st.tracks.slice()};
+      if(addEdit(e)){closeSheet();toast(T_("בוצע ✓ {t}",{t:editText(e)}),3500);if(!mix)mixPlay(Math.max(0,e.a-2))}}));
+  });
+  draw();
+}
+$("rangeBtn").onclick=()=>{if(proj.arr)openRangeSheet()};
+renderGenres();
+window.compose={createInstrumental,makeGuide,genreFromText,editGain,parseT,formFor}; // לבדיקות
 
 "use strict";
 /* ============ כניסה עם Google, קוד הזמנה ושמירה בענן (Supabase) ============ */
@@ -2443,7 +2798,7 @@ $("acct").onclick=()=>openSheet(T_("החשבון שלי"),B=>{
 // ---------- סנכרון לענן ----------
 const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 function metaOf(){const d=proj.det?Object.assign({},proj.det,{f0:undefined}):null;
-  return {cuts:proj.cuts,secs:proj.secs,mode:proj.mode,inst:proj.inst,title:proj.title||"",refs:proj.refs||[],det:d,arr:proj.arr}}
+  return Object.assign(projMeta(),{det:d,id:undefined})}
 function setSync(s){const m={saving:"⏳ "+T_("שומרת בענן..."),saved:"☁️ "+T_("הכול שמור בענן"),offline:"⚠️ "+T_("אין חיבור. נשמר במכשיר, ויעלה לענן כשהחיבור יחזור"),idle:""};$("syncState").textContent=m[s]||""}
 let upT=0,upBusy=false,upAgain=false;
 function cloudQueue(){if(!member||!sb||!proj.mono)return;clearTimeout(upT);setSync("saving");upT=setTimeout(cloudPush,2500)}
@@ -2452,11 +2807,11 @@ async function cloudPush(){
   try{
     if(!proj.id){proj.id=newId();saveProjLocal()}
     const path=me.id+"/"+proj.id;
-    if(flag.get("up."+proj.id)!=="1"&&proj.blob){
+    if(!proj.noVoice&&flag.get("up."+proj.id)!=="1"&&proj.blob){
       const {error}=await sb.storage.from("audio").upload(path,proj.blob,{upsert:true,contentType:proj.blob.type||"audio/webm"});
       if(error)throw error;flag.set("up."+proj.id,"1");
     }
-    const {error}=await sb.from("items").upsert({id:proj.id,kind:"studio",title:projTitle(),data:metaOf(),audio_path:path,updated_at:new Date().toISOString()});
+    const {error}=await sb.from("items").upsert({id:proj.id,kind:"studio",title:projTitle(),data:metaOf(),audio_path:proj.noVoice?null:path,updated_at:new Date().toISOString()});
     if(error)throw error;
     setSync("saved");refreshProjects();
   }catch(e){console.warn("cloud save",e);setSync("offline")}
@@ -2506,12 +2861,13 @@ function renderProjects(){
   }
 }
 async function openCloudProject(r){
-  if(!r.audio_path)return;
+  const m=r.data||{};let blob=null;
+  if(!r.audio_path&&!m.noVoice)return;
   toast(T_("⏳ פותחת את הפרויקט..."));vStop();mixStop();
-  const {data:blob,error}=await sb.storage.from("audio").download(r.audio_path);
-  if(error||!blob){toast(T_("לא הצלחתי לפתוח את הפרויקט מהענן"));return}
-  if(!await loadAudio(blob,false))return;
-  const m=r.data||{};
+  if(m.noVoice)loadSilent(m.dur);
+  else{const res=await sb.storage.from("audio").download(r.audio_path);blob=res.data;
+    if(res.error||!blob){toast(T_("לא הצלחתי לפתוח את הפרויקט מהענן"));return}
+    if(!await loadAudio(blob,false))return}
   arrInvalidate(true);
   proj.id=r.id;flag.set("up."+r.id,"1");
   if(m.cuts&&m.secs&&m.secs.length===m.cuts.length+1&&m.cuts.every(c=>c<proj.dur)){proj.cuts=m.cuts;proj.secs=m.secs}else autoSplit(true);
@@ -2520,20 +2876,225 @@ async function openCloudProject(r){
   proj.title=m.title||"";$("pTitle").value=proj.title;
   proj.refs=m.refs||[];proj.ref=refProfile();renderRefs();
   renderSecs();drawWave();
-  db.put("audio",blob);saveProjLocal();
+  restoreMeta(m);db.put("audio",blob);saveProjLocal();
   if(m.det){proj.det=m.det;proj.arr=m.arr||null;await runBuild()}
   renderProjects();setSync("saved");toast(T_("הפרויקט נפתח 🎶"));
 }
 $("newProj").onclick=async()=>{
   if(proj.mono&&!member&&!await askConfirm(T_("הפרויקט הנוכחי יימחק מהמכשיר. להמשיך?")))return;
   vStop();mixStop();arrInvalidate(true);
-  Object.assign(proj,{blob:null,buf:null,mono:null,dur:0,cuts:[],secs:[],title:"",refs:[],ref:null,id:null});
-  $("pTitle").value="";renderRefs();$("waveBox").hidden=true;$("secCard").hidden=true;$("modeCard").hidden=true;
+  Object.assign(proj,{blob:null,buf:null,mono:null,dur:0,cuts:[],secs:[],title:"",refs:[],ref:null,id:null,noVoice:false,guide:false,genre:"",genreText:"",edits:[],chat:[]});
+  $("pTitle").value="";renderRefs();renderGenres();renderModeUI();$("chat").hidden=true;$("waveBox").hidden=true;$("secCard").hidden=true;$("modeCard").hidden=true;
   db.put("audio",null);saveProjLocal();renderProjects();setSync("idle");
   window.scrollTo({top:0,behavior:"smooth"});toast(T_("פרויקט חדש: הקליטי או העלי שירה 🎤"));
 };
 window.cloud={metaOf,cloudPush,cloudPull,openCloudProject,showGate,get state(){return {me,member,rows:cloudRows.length}}}; // לבדיקות
 cloudInit();
+
+"use strict";
+/* ============ צ'אט לכל פרויקט: התייעצות, מילים, ושינויים בשיר דרך שיחה (Gemini דרך השרת) ============ */
+
+const chatOn=()=>!!(sb&&member);
+const SEC_TYPE=n=>EN[n]||n;
+function chatCtx(){
+  const R=ranges(),tr=proj.arr?allTracks():[],bpm=proj.det?proj.det.bpm:0;
+  return JSON.stringify({
+    title:projTitle(),kind:proj.noVoice?"instrumental only (no vocals recorded yet)":"user's own vocal recording + generated arrangement",
+    length:fmt(proj.dur),length_sec:+proj.dur.toFixed(1),style:proj.genre||"auto",style_description:proj.genreText||"",
+    key:proj.det?keyName(proj.det.key):"not analysed yet",bpm:bpm||null,arrangement_built:!!proj.arr,
+    sections:R.map(([a,b],i)=>({index:i,type:SEC_TYPE(proj.secs[i].name),start:fmt(a),end:fmt(b),start_sec:+a.toFixed(1),end_sec:+b.toFixed(1),
+      bars:bpm?Math.round((b-a)/(240/bpm)):null,instruction:proj.secs[i].note||"",lyrics:proj.secs[i].lyr||"",
+      tracks_playing:proj.arr?tr.filter(t=>cellOn(t.id,i)&&!proj.arr.mute[t.id]).map(t=>t.id):[]})),
+    tracks:tr.map(t=>({id:t.id,name:T_(t.name),instrument:t.id==="melody"?proj.inst:t.id==="vocal"?"voice":instOf(t.id),volume_percent:Math.round(volOf(t)*100),muted:!!proj.arr.mute[t.id]})),
+    time_changes:(proj.edits||[]).map(e=>({start_sec:+e.a.toFixed(1),end_sec:+e.b.toFixed(1),kind:e.kind==="duck"?"music lowered "+(-e.db)+"dB":"silenced: "+e.tracks.join(",")})),
+    reference_songs:(proj.refs||[]).map(r=>({bpm:r.bpm,key:keyName(r.key),energy:r.energy})),
+    learned_taste:learned()
+  });
+}
+function chatSystem(){
+  return `You are the creative assistant inside "Shir Li" (שיר לי), a music studio web app. You are talking with the user about ONE song project (state below, JSON).
+You help with: advice on arrangement, structure, melody, singing and production; writing ORIGINAL lyrics; and making changes to the song with the tools.
+Rules:
+- Reply in the language the user writes in (UI language now: ${LANG==="he"?"Hebrew":"English"}). In Hebrew, mirror the user's grammatical gender; if unknown, use feminine singular like the rest of the app. Be warm, short and concrete. No long lectures.
+- When the user asks for a change you can make, DO it with tools (several calls are fine), then say briefly what you changed. If something can't be done with the tools, say so honestly and suggest the closest thing.
+- Times: the user may say "minute 1:20" or "from 1 to 1:30". Convert m:ss to seconds. "Lower the music so I can sing/rap there" = lower_music.
+- Track ids: ${proj.arr?allTracks().map(t=>t.id).join(", "):"(arrangement not built yet: ask the user to press the build button, or call rebuild_arrangement)"}.
+- Lyrics: always original, never copy existing songs. Fit them to the section length: about one line per 2 bars (one line per bar for rap), with a singable rhythm and rhymes. Hebrew lyrics should be natural modern Hebrew. Put lyrics into sections with set_lyrics only when the user wants them inserted; otherwise show them and offer to insert.
+- Section instructions are free text the arranger understands, e.g. "quiet, only piano", "strong drums and guitar", "no drums", "add backing vocals". Changing them needs a rebuild (the tool does it).
+Project state:
+${chatCtx()}`;
+}
+function chatTools(){
+  const ids=proj.arr?allTracks().map(t=>t.id):BASE_TRACKS.map(t=>t.id);
+  const TRK={type:"string",enum:ids};
+  const have=(proj.arr&&proj.arr.extra)||[];
+  const canAdd=Object.keys(EXTRA_DEFS).filter(k=>!have.includes(k)&&!(proj.noVoice&&k==="harmony"));
+  const opts=Object.entries(TRACK_INSTS).map(([k,o])=>k+": "+Object.keys(o).join("/")).join("; ")+"; melody: "+Object.keys(INSTS).join("/");
+  const range={start_sec:{type:"number"},end_sec:{type:"number"}};
+  const T=[
+    {name:"lower_music",description:"Lower the volume of the music (all instruments, not the user's voice) between two times, e.g. to leave room for singing or rapping there.",
+      parameters:{type:"object",properties:{...range,amount:{type:"string",enum:["little","medium","a_lot"]}},required:["start_sec","end_sec"]}},
+    {name:"silence_instruments",description:"Silence specific instrument tracks between two times.",
+      parameters:{type:"object",properties:{...range,tracks:{type:"array",items:TRK}},required:["start_sec","end_sec","tracks"]}},
+    {name:"undo_time_changes",description:"Remove earlier lower/silence changes that overlap a time range, or all of them when no range is given.",
+      parameters:{type:"object",properties:range}},
+    {name:"set_track_in_section",description:"Turn a track on or off for a whole section.",
+      parameters:{type:"object",properties:{track:TRK,section_index:{type:"integer"},on:{type:"boolean"}},required:["track","section_index","on"]}},
+    {name:"set_track_instrument",description:"Change the instrument sound of a track. Options: "+opts,
+      parameters:{type:"object",properties:{track:TRK,instrument:{type:"string"}},required:["track","instrument"]}},
+    {name:"set_track_volume",description:"Set a track's volume, 0-150 percent (100 = default). 0 mutes it.",
+      parameters:{type:"object",properties:{track:TRK,percent:{type:"integer"}},required:["track","percent"]}},
+    {name:"set_style",description:"Change the musical style of the whole arrangement and rebuild it.",
+      parameters:{type:"object",properties:{style:{type:"string",enum:["auto","pop","rock","rap","mizrahi"]},description:{type:"string",description:"the user's own words for the style"}},required:["style"]}},
+    {name:"set_section_instruction",description:"Replace the free-text instruction of a section and rebuild the arrangement.",
+      parameters:{type:"object",properties:{section_index:{type:"integer"},instruction:{type:"string"}},required:["section_index","instruction"]}},
+    {name:"set_lyrics",description:"Write lyrics into a section, one line per line.",
+      parameters:{type:"object",properties:{section_index:{type:"integer"},lyrics:{type:"string"}},required:["section_index","lyrics"]}},
+    {name:"set_song_title",description:"Set the song's title.",parameters:{type:"object",properties:{title:{type:"string"}},required:["title"]}},
+    {name:"rebuild_arrangement",description:"Rebuild all instruments from the section instructions and style.",parameters:{type:"object",properties:{}}}
+  ];
+  if(canAdd.length)T.push({name:"add_track",description:"Add an extra instrument track: "+canAdd.map(k=>k+" ("+EXTRA_DEFS[k].desc+")").join(", "),
+    parameters:{type:"object",properties:{track:{type:"string",enum:canAdd}},required:["track"]}});
+  if(have.length)T.push({name:"remove_track",description:"Remove an extra instrument track.",parameters:{type:"object",properties:{track:{type:"string",enum:have}},required:["track"]}});
+  if(!proj.noVoice)T.push({name:"set_voice_effects",description:"Set effects on the user's voice in one section. Unspecified fields keep their value.",
+    parameters:{type:"object",properties:{section_index:{type:"integer"},autotune:{type:"boolean"},pitch_semitones:{type:"integer",description:"-12..12"},
+      style:{type:"string",enum:["none","demon","robot","cartoon","radio"]},reverb:{type:"boolean"},echo:{type:"boolean"}},required:["section_index"]}});
+  return T;
+}
+
+// ---------- ביצוע הפעולות שה-AI ביקש ----------
+async function runTool(n,a,st){
+  const sec=i=>Number.isInteger(i)&&i>=0&&i<proj.secs.length;
+  const trk=k=>proj.arr&&allTracks().find(t=>t.id===k);
+  const needArr=()=>proj.arr?null:{error:"The arrangement is not built yet. Call rebuild_arrangement first."};
+  const rg=()=>{const s=+a.start_sec,e=+a.end_sec;return isFinite(s)&&isFinite(e)&&e>s?[s,e]:null};
+  switch(n){
+    case "lower_music":{const r=rg();if(!r)return {error:"bad time range"};const db={little:-4,medium:-8,a_lot:-14}[a.amount]||-8;
+      const e={a:r[0],b:r[1],kind:"duck",db};if(!addEdit(e))return {error:"range too short"};st.acts.push(editText(e));return {ok:true}}
+    case "silence_instruments":{const r=rg();const ts=(a.tracks||[]).filter(k=>trk(k)&&k!=="vocal");if(!r||!ts.length)return {error:"bad range or tracks"};
+      const e={a:r[0],b:r[1],kind:"mute",tracks:ts};if(!addEdit(e))return {error:"range too short"};st.acts.push(editText(e));return {ok:true}}
+    case "undo_time_changes":{const r=rg();const before=(proj.edits||[]).length;
+      proj.edits=(proj.edits||[]).filter(e=>r&&(e.b<=r[0]||e.a>=r[1]));const k=before-proj.edits.length;
+      saveProj();renderEdits();drawRoll();st.mix=true;st.acts.push(T_("↺ ביטלתי {n} שינויים בטווח זמן",{n:k}));return {ok:true,removed:k}}
+    case "set_track_in_section":{const x=needArr();if(x)return x;if(!trk(a.track)||!sec(a.section_index))return {error:"bad track or section"};
+      const u=proj.arr.user[a.track]=proj.arr.user[a.track]||[];u[a.section_index]=!!a.on;st.mix=true;
+      st.acts.push((a.on?"🔊 ":"🔇 ")+T_(trk(a.track).name)+" · "+T_(proj.secs[a.section_index].name));return {ok:true}}
+    case "set_track_instrument":{const x=needArr();if(x)return x;const t=trk(a.track);if(!t)return {error:"bad track"};
+      if(a.track==="melody"){if(!INSTS[a.instrument])return {error:"options: "+Object.keys(INSTS).join(",")};proj.inst=a.instrument;renderInsts();BASE_TRACKS[1].emoji=INST_EMOJI[a.instrument]||"🎹"}
+      else{const o=TRACK_INSTS[a.track];if(!o||!o[a.instrument])return {error:"options: "+(o?Object.keys(o).join(","):"none")};proj.arr.insts[a.track]=a.instrument;(proj.arr.instUser=proj.arr.instUser||{})[a.track]=true}
+      st.re.add(a.track);st.acts.push("🎛️ "+T_(t.name)+": "+T_(a.track==="melody"?INSTS[a.instrument]:TRACK_INSTS[a.track][a.instrument]));return {ok:true}}
+    case "set_track_volume":{const x=needArr();if(x)return x;const t=trk(a.track);if(!t)return {error:"bad track"};
+      const p=Math.max(0,Math.min(150,+a.percent||0));proj.arr.vols[a.track]=p/100;st.mix=true;st.acts.push("🔊 "+T_(t.name)+" "+p+"%");return {ok:true}}
+    case "add_track":{const x=needArr();if(x)return x;if(!EXTRA_DEFS[a.track]||(proj.arr.extra||[]).includes(a.track))return {error:"cannot add"};
+      proj.arr.extra=(proj.arr.extra||[]).concat(a.track);proj.arr.removed=(proj.arr.removed||[]).filter(k=>k!==a.track);
+      if(a.track==="harmony"){const u=proj.arr.user.harmony=proj.arr.user.harmony||[];proj.secs.forEach((s,i)=>{if(u[i]==null)u[i]=s.name==="פזמון"})}
+      st.re.add(a.track);st.grid=true;st.acts.push("➕ "+T_(EXTRA_DEFS[a.track].name));return {ok:true}}
+    case "remove_track":{const x=needArr();if(x)return x;if(!(proj.arr.extra||[]).includes(a.track))return {error:"not present"};
+      proj.arr.extra=proj.arr.extra.filter(k=>k!==a.track);proj.arr.removed=(proj.arr.removed||[]).concat(a.track);delete tracksBuf[a.track];
+      st.grid=true;st.mix=true;st.acts.push("🗑 "+T_(EXTRA_DEFS[a.track].name));return {ok:true}}
+    case "set_style":{const g=a.style==="auto"?"":a.style;setGenre(g,a.description!=null?a.description:proj.genreText);st.rebuild=true;
+      st.acts.push(T_("🎸 סגנון: {g}",{g:T_(g?GENRES[g].name:"✨ אוטומטי")}));return {ok:true}}
+    case "set_section_instruction":{if(!sec(a.section_index))return {error:"bad section"};proj.secs[a.section_index].note=String(a.instruction||"").slice(0,400);
+      renderSecs();st.rebuild=true;st.acts.push("📝 "+T_(proj.secs[a.section_index].name)+": "+proj.secs[a.section_index].note);return {ok:true}}
+    case "set_lyrics":{if(!sec(a.section_index))return {error:"bad section"};proj.secs[a.section_index].lyr=String(a.lyrics||"").slice(0,600);
+      renderSecs();saveProj();st.acts.push("✍️ "+T_("מילים ל{s}",{s:T_(proj.secs[a.section_index].name)}));return {ok:true}}
+    case "set_song_title":{proj.title=String(a.title||"").slice(0,40);$("pTitle").value=proj.title;saveProj();st.acts.push("🏷️ "+proj.title);return {ok:true}}
+    case "rebuild_arrangement":st.rebuild=true;st.acts.push(T_("🔄 בניתי מחדש את הכלים"));return {ok:true};
+    case "set_voice_effects":{const x=needArr();if(x)return x;if(proj.noVoice||!sec(a.section_index))return {error:"no voice or bad section"};
+      const f=Object.assign({},fxOf(a.section_index));if(a.autotune!=null)f.tune=a.autotune?1:0;if(a.pitch_semitones!=null)f.shift=Math.max(-12,Math.min(12,a.pitch_semitones|0));
+      if(a.style&&FX_STYLES[a.style])f.style=a.style;if(a.reverb!=null)f.reverb=!!a.reverb;if(a.echo!=null)f.echo=!!a.echo;
+      proj.arr.fx[a.section_index]=f;st.re.add("vocal");st.acts.push("🎤 "+T_("אפקטים לקול ב{s}",{s:T_(proj.secs[a.section_index].name)}));return {ok:true}}
+  }
+  return {error:"unknown tool"};
+}
+async function applyState(st){
+  if(st.rebuild&&proj.mono){await runBuild();return}
+  if(!proj.arr)return;
+  for(const k of st.re){if(k==="vocal"||k==="harmony")await renderVoice();else tracksBuf&&(tracksBuf[k]=renderTrack(k))}
+  if(st.re.size||st.grid)renderGrid();else paintGrid();
+  saveProj();drawRoll();if(st.re.size||st.mix||st.grid)mixRestart();
+}
+
+// ---------- השיחה ----------
+let chatBusy=false;
+async function callAI(contents){
+  const {data,error}=await sb.functions.invoke("chat",{body:{system:chatSystem(),contents,tools:chatTools()}});
+  if(error){let code=0,msg="";try{code=error.context.status;const j=await error.context.json();msg=(j.error&&(j.error.message||j.error))||""}catch(e){}
+    const e=new Error(String(msg||error.message));e.code=code;throw e}
+  return data;
+}
+function histContents(){
+  const out=[];
+  for(const m of (proj.chat||[]).slice(-20)){const role=m.r==="u"?"user":"model";const text=m.t+(m.acts&&m.acts.length?"\n["+m.acts.join(" | ")+"]":"");
+    if(out.length&&out[out.length-1].role===role)out[out.length-1].parts[0].text+="\n"+text;else out.push({role,parts:[{text}]})}
+  while(out.length&&out[0].role!=="user")out.shift();
+  return out;
+}
+async function chatAsk(text){
+  text=String(text||"").trim();if(!text||chatBusy)return;
+  $("chat").hidden=false;
+  if(!chatOn()){renderChat();return}
+  proj.chat=proj.chat||[];proj.chat.push({r:"u",t:text});chatBusy=true;renderChat();
+  const st={acts:[],re:new Set(),rebuild:false,mix:false,grid:false};let reply="";
+  try{
+    const contents=histContents();
+    for(let round=0;round<5;round++){
+      const d=await callAI(contents);
+      const c=d&&d.candidates&&d.candidates[0];
+      if(!c||!c.content){reply=T_("לא הצלחתי לענות על זה. נסי לנסח אחרת");break}
+      const parts=c.content.parts||[];contents.push(c.content);
+      const calls=parts.filter(p=>p.functionCall);
+      reply=parts.filter(p=>p.text&&!p.thought).map(p=>p.text).join("").trim()||reply;
+      if(!calls.length)break;
+      const resp=[];
+      for(const p of calls){let r;try{r=await runTool(p.functionCall.name,p.functionCall.args||{},st)}catch(e){console.error(e);r={error:String(e.message||e)}}
+        resp.push({functionResponse:{name:p.functionCall.name,response:r}})}
+      contents.push({role:"user",parts:resp});
+      if(st.rebuild){$("chatLog").lastChild&&($("chatLog").lastChild.textContent="⏳ "+T_("בונה את הכלים מחדש..."));await applyState(st);st.rebuild=false;st.re.clear();st.mix=st.grid=false}
+    }
+    await applyState(st);
+  }catch(e){console.warn("chat",e);
+    reply=e.code===429?T_("הגעתי למכסה החינמית של ה-AI להיום או לדקה הזו. נסי שוב בעוד כמה דקות 🙏")
+      :e.code===404?T_("הצ'אט עוד לא הופעל בשרת. צריך להשלים את ההגדרה ב-Supabase")
+      :e.code===403?T_("הצ'אט פתוח רק למי שנכנס עם קוד הזמנה")
+      :T_("אין חיבור ל-AI כרגע. בדקי את האינטרנט ונסי שוב");
+  }
+  proj.chat.push({r:"m",t:reply||(st.acts.length?T_("בוצע ✓"):"…"),acts:st.acts});
+  if(proj.chat.length>60)proj.chat=proj.chat.slice(-60);
+  chatBusy=false;saveProj();renderChat();
+}
+// מרקדאון בסיסי: **מודגש** ורשימות
+function mdNode(text){
+  const box=document.createElement("div");
+  for(const line of String(text).split("\n")){const ln=document.createElement("div");
+    const l=line.replace(/^\s*[*-]\s+/,"• ").replace(/^#+\s*/,"");
+    l.split(/(\*\*[^*]+\*\*)/).forEach(s=>{if(/^\*\*[^*]+\*\*$/.test(s))ln.append(el("b",null,s.slice(2,-2)));else if(s)ln.append(document.createTextNode(s))});
+    if(!l.trim())ln.style.height=".5em";box.append(ln)}
+  return box;
+}
+function renderChat(){
+  $("chatTitle").textContent="💬 "+projTitle();
+  const L=$("chatLog");L.replaceChildren();
+  if(!chatOn()){L.append(el("p","hint",T_("הצ'אט עובד כשמחוברים לחשבון באתר עצמו (kurouta24.github.io/shir-li)")));$("chatSug").hidden=true;return}
+  if(!(proj.chat||[]).length)L.append(el("p","hint",T_("אפשר לשאול אותי כל דבר על השיר הזה, לבקש מילים, או לבקש שינויים. למשל: \"תנמיכי את המוזיקה מדקה 1:00 עד 1:30\" 🎶")));
+  for(const m of proj.chat||[]){const d=el("div","msg "+(m.r==="u"?"u":"m"));d.dir="auto";d.append(mdNode(m.t));
+    if(m.acts&&m.acts.length){const a=el("div","acts");for(const x of m.acts)a.append(el("div",null,"✓ "+x));d.append(a)}L.append(d)}
+  if(chatBusy)L.append(el("div","msg m typing","⏳ "+T_("חושבת...")));
+  const sg=$("chatSug");sg.replaceChildren();sg.hidden=chatBusy||(proj.chat||[]).length>0;
+  const S=proj.noVoice?["💡 מה אפשר לשפר בשיר?","✍️ תכתבי לי מילים לפזמון","🔉 תשאירי מקום לשירה בבית הראשון","🥁 תורידי את התופים בפתיח"]
+    :["💡 מה אפשר לשפר בשיר?","✍️ תעזרי לי עם מילים לבית","🔉 תנמיכי קצת את המוזיקה בפזמון","🥁 תורידי את התופים בפתיח"];
+  for(const s of S)sg.append(el("button","chip",T_(s),()=>chatAsk(T_(s).replace(/^\S+\s/,""))));
+  $("chatSend").disabled=chatBusy;
+  requestAnimationFrame(()=>{L.scrollTop=L.scrollHeight});
+}
+$("chatFab").onclick=()=>{$("chat").hidden=false;renderChat();setTimeout(()=>$("chatIn").focus(),60)};
+$("chatX").onclick=()=>{$("chat").hidden=true};
+$("chat").onclick=e=>{if(e.target.id==="chat")$("chat").hidden=true};
+$("chatForm").onsubmit=e=>{e.preventDefault();const v=$("chatIn").value;$("chatIn").value="";chatAsk(v)};
+$("chatIn").onkeydown=e=>{if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();$("chatForm").requestSubmit()}};
+// כפתור הצ'אט מופיע כשיש פרויקט פתוח באולפן
+setInterval(()=>{$("chatFab").hidden=!(proj.mono&&!$("studio").hidden&&$("chat").hidden&&$("gate").hidden)},700);
+window.chat={chatAsk,runTool,chatTools,chatSystem,histContents}; // לבדיקות
 
 
 </script>
