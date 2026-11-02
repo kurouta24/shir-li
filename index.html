@@ -2381,7 +2381,7 @@ if(location.protocol==="https:"&&!inArtifact()&&"serviceWorker" in navigator)nav
 "use strict";
 /* ============ כניסה עם Google, קוד הזמנה ושמירה בענן (Supabase) ============ */
 // הכתובת והמפתח הציבורי של פרויקט ה-Supabase. המפתח הזה ציבורי מטבעו, וההרשאות נאכפות בשרת
-const CLOUD={url:"",key:""};
+const CLOUD={url:"https://ubygyiosmgostoxpnibe.supabase.co",key:"sb_publishable_eg9kYlOo0P55VLYKv1wJmg_MlEN2Iy0"};
 let sb=null,me=null,member=false,cloudRows=[];
 const cloudOn=()=>!!(CLOUD.url&&CLOUD.key&&window.supabase&&!inArtifact());
 const flag={get(k){try{return localStorage.getItem("shirli."+k)}catch(e){return null}},set(k,v){try{localStorage.setItem("shirli."+k,v)}catch(e){}}};
