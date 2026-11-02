@@ -2894,6 +2894,7 @@ cloudInit();
 "use strict";
 /* ============ צ'אט לכל פרויקט: התייעצות, מילים, ושינויים בשיר דרך שיחה (Gemini דרך השרת) ============ */
 
+const CHAT_FN="dynamic-service"; // שם הפונקציה ב-Supabase
 const chatOn=()=>!!(sb&&member);
 const SEC_TYPE=n=>EN[n]||n;
 function chatCtx(){
@@ -3018,7 +3019,7 @@ async function applyState(st){
 // ---------- השיחה ----------
 let chatBusy=false;
 async function callAI(contents){
-  const {data,error}=await sb.functions.invoke("chat",{body:{system:chatSystem(),contents,tools:chatTools()}});
+  const {data,error}=await sb.functions.invoke(CHAT_FN,{body:{system:chatSystem(),contents,tools:chatTools()}});
   if(error){let code=0,msg="";try{code=error.context.status;const j=await error.context.json();msg=(j.error&&(j.error.message||j.error))||""}catch(e){}
     const e=new Error(String(msg||error.message));e.code=code;throw e}
   return data;
